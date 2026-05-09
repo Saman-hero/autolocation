@@ -47,7 +47,7 @@ $vehicles = $model->search($keyword, $type);
             <input type="text"
                    name="keyword"
                    class="form-control"
-                   placeholder="🔍 Numéro, marque ou modèle..."
+                   placeholder="🔍 Numéro, marque ou modèle"
                    value="<?= htmlspecialchars($keyword) ?>">
         </div>
 

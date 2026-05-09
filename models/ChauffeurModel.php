@@ -8,45 +8,78 @@ class ChauffeurModel {
         $this->conn = $db;
     }
 
-    // 🔥 GET ALL (SANS ERREUR)
-    public function getAll() {
+    public function getAll($filters = []) {
 
         $sql = "
         SELECT 
             c.*,
             v.numero AS vehicle_numero,
             v.marque AS vehicle_marque,
-            v.modele AS vehicle_modele
+            v.modele AS vehicle_modele,
+            COUNT(mt.id) AS total_missions
         FROM chauffeurs c
-        LEFT JOIN mission_team mt 
-            ON c.id = mt.chauffeur_id
-        LEFT JOIN vehicles v 
-            ON mt.vehicle_id = v.id
-        ORDER BY c.id DESC
+        LEFT JOIN mission_team mt ON c.id = mt.chauffeur_id
+        LEFT JOIN vehicles v ON c.vehicle_id = v.id
+        WHERE 1=1
         ";
 
-        return $this->conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        // FILTERS
+        if (!empty($filters['grade'])) {
+            $sql .= " AND c.grade = :grade";
+        }
+
+        if (!empty($filters['statut'])) {
+            $sql .= " AND c.statut = :statut";
+        }
+
+        if (!empty($filters['vehicle'])) {
+            $sql .= " AND c.vehicle_id = :vehicle";
+        }
+
+        $sql .= " GROUP BY c.id
+        ORDER BY 
+        CASE c.grade
+            WHEN 'adjudant-chef' THEN 1
+            WHEN 'adjudant' THEN 2
+            WHEN 'sergent-chef' THEN 3
+            WHEN 'sergent' THEN 4
+            WHEN 'caporal chef' THEN 5
+            WHEN 'caporal' THEN 6
+            WHEN '1 classe' THEN 7
+            WHEN '2 classe' THEN 8
+            ELSE 9
+        END ASC";
+
+        $stmt = $this->conn->prepare($sql);
+
+        foreach ($filters as $k => $v) {
+            if ($v !== "") {
+                $stmt->bindValue(":$k", $v);
+            }
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🔥 GET BY ID
     public function getById($id) {
         $stmt = $this->conn->prepare("SELECT * FROM chauffeurs WHERE id=?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // 🔥 CREATE
     public function create($data) {
+
         $sql = "INSERT INTO chauffeurs 
-        (nom, prenom, telephone, adresse, date_embauche, grade, matricule, cine, statut)
+        (nom, prenom, telephone, adresse, date_embauche, grade, matricule, cine, statut, niveau, type_permis, vehicle_id, lieu_detachement, date_detachement)
         VALUES
-        (:nom, :prenom, :telephone, :adresse, :date_embauche, :grade, :matricule, :cine, :statut)";
+        (:nom, :prenom, :telephone, :adresse, :date_embauche, :grade, :matricule, :cine, :statut, :niveau, :type_permis, :vehicle_id, :lieu_detachement, :date_detachement)";
 
         return $this->conn->prepare($sql)->execute($data);
     }
 
-    // 🔥 UPDATE
     public function update($data) {
+
         $sql = "UPDATE chauffeurs SET
             nom=:nom,
             prenom=:prenom,
@@ -56,15 +89,18 @@ class ChauffeurModel {
             grade=:grade,
             matricule=:matricule,
             cine=:cine,
-            statut=:statut
+            statut=:statut,
+            niveau=:niveau,
+            type_permis=:type_permis,
+            vehicle_id=:vehicle_id,
+            lieu_detachement=:lieu_detachement,
+            date_detachement=:date_detachement
         WHERE id=:id";
 
         return $this->conn->prepare($sql)->execute($data);
     }
 
-    // 🔥 DELETE
     public function delete($id) {
-        $stmt = $this->conn->prepare("DELETE FROM chauffeurs WHERE id=?");
-        return $stmt->execute([$id]);
+        return $this->conn->prepare("DELETE FROM chauffeurs WHERE id=?")->execute([$id]);
     }
 }
