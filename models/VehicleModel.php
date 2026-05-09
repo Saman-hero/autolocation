@@ -8,20 +8,32 @@ class VehicleModel {
         $this->conn = $db;
     }
 
-    // GET ALL
+    // =========================
+    // 🔹 GET ALL
+    // =========================
     public function getAll() {
-        return $this->conn->query("SELECT * FROM vehicles ORDER BY id DESC")->fetchAll();
+        return $this->conn->query("
+            SELECT * FROM vehicles 
+            ORDER BY id DESC
+        ")->fetchAll();
     }
 
-    // GET BY ID
+    // =========================
+    // 🔹 GET BY ID
+    // =========================
     public function getById($id) {
-        $stmt = $this->conn->prepare("SELECT * FROM vehicles WHERE id=?");
+        $stmt = $this->conn->prepare("
+            SELECT * FROM vehicles WHERE id=?
+        ");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
 
-    // CREATE
+    // =========================
+    // 🔹 CREATE
+    // =========================
     public function create($data) {
+
         $sql = "INSERT INTO vehicles
         (numero, marque, modele, type, annee, kilometrage, statut)
         VALUES (:numero, :marque, :modele, :type, :annee, :kilometrage, :statut)";
@@ -29,28 +41,37 @@ class VehicleModel {
         return $this->conn->prepare($sql)->execute($data);
     }
 
-    // UPDATE
+    // =========================
+    // 🔹 UPDATE
+    // =========================
     public function update($data) {
+
         $sql = "UPDATE vehicles SET
-        numero=:numero,
-        marque=:marque,
-        modele=:modele,
-        type=:type,
-        annee=:annee,
-        kilometrage=:kilometrage,
-        statut=:statut
-        WHERE id=:id";
+            numero = :numero,
+            marque = :marque,
+            modele = :modele,
+            type = :type,
+            annee = :annee,
+            kilometrage = :kilometrage,
+            statut = :statut
+        WHERE id = :id";
 
         return $this->conn->prepare($sql)->execute($data);
     }
 
-    // DELETE
+    // =========================
+    // 🔹 DELETE
+    // =========================
     public function delete($id) {
-        $stmt = $this->conn->prepare("DELETE FROM vehicles WHERE id=?");
+        $stmt = $this->conn->prepare("
+            DELETE FROM vehicles WHERE id=?
+        ");
         return $stmt->execute([$id]);
     }
 
-    // ⭐ DISPONIBLES (IMPORTANT POUR MISSIONS)
+    // =========================
+    // 🔹 DISPONIBLES
+    // =========================
     public function getAvailable() {
         return $this->conn->query("
             SELECT * FROM vehicles
@@ -59,19 +80,57 @@ class VehicleModel {
         ")->fetchAll();
     }
 
-    // ⭐ METTRE EN MISSION
+    // =========================
+    // 🔹 METTRE EN MISSION
+    // =========================
     public function setOnMission($id) {
         $stmt = $this->conn->prepare("
-            UPDATE vehicles SET statut='en mission' WHERE id=?
+            UPDATE vehicles 
+            SET statut = 'en mission' 
+            WHERE id = ?
         ");
         return $stmt->execute([$id]);
     }
 
-    // ⭐ LIBÉRER (option future)
+    // =========================
+    // 🔹 LIBÉRER VEHICULE
+    // =========================
     public function setAvailable($id) {
         $stmt = $this->conn->prepare("
-            UPDATE vehicles SET statut='disponible' WHERE id=?
+            UPDATE vehicles 
+            SET statut = 'disponible' 
+            WHERE id = ?
         ");
         return $stmt->execute([$id]);
+    }
+
+    // =========================
+    // 🔥 NOUVEAU : RECHERCHE + FILTRE
+    // =========================
+    public function search($keyword = null, $type = null)
+    {
+        $sql = "SELECT * FROM vehicles WHERE 1=1";
+        $params = [];
+
+        // 🔍 recherche par numéro / marque / modèle
+        if (!empty($keyword)) {
+            $sql .= " AND (numero LIKE ? OR marque LIKE ? OR modele LIKE ?)";
+            $params[] = "%$keyword%";
+            $params[] = "%$keyword%";
+            $params[] = "%$keyword%";
+        }
+
+        // 🚗 filtre par type
+        if (!empty($type)) {
+            $sql .= " AND type = ?";
+            $params[] = $type;
+        }
+
+        $sql .= " ORDER BY id DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 }
