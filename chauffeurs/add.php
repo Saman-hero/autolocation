@@ -9,7 +9,7 @@ $conn = $db->getConnection();
 $model = new ChauffeurModel($conn);
 
 $vehicleModel = new VehicleModel($conn);
-$vehicles = $vehicleModel->getAll();
+$vehicles = $vehicleModel->getFreeVehicles();
 
 if($_SERVER["REQUEST_METHOD"] == "POST") {
 

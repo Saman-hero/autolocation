@@ -9,7 +9,15 @@ $conn = $db->getConnection();
 $model = new ChauffeurModel($conn);
 
 $vehicleModel = new VehicleModel($conn);
-$vehicles = $vehicleModel->getAll();
+$vehicles = $vehicleModel->getFreeVehicles();
+
+// ajouter le véhicule actuel s’il existe
+if (!empty($c['vehicle_id'])) {
+    $currentVehicle = $vehicleModel->getById($c['vehicle_id']);
+    if ($currentVehicle) {
+        $vehicles[] = $currentVehicle;
+    }
+}
 
 $id = $_GET['id'];
 $c = $model->getById($id);

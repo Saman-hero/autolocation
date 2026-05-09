@@ -103,7 +103,18 @@ class VehicleModel {
         ");
         return $stmt->execute([$id]);
     }
-    
+    public function getFreeVehicles() {
+        return $this->conn->query("
+            SELECT v.*
+            FROM vehicles v
+            WHERE v.id NOT IN (
+                SELECT vehicle_id 
+                FROM chauffeurs 
+                WHERE vehicle_id IS NOT NULL
+            )
+            ORDER BY v.id DESC
+        ")->fetchAll(PDO::FETCH_ASSOC);
+    }
     // =========================
     // 🔥 NOUVEAU : RECHERCHE + FILTRE
     // =========================
