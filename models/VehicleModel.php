@@ -103,7 +103,7 @@ class VehicleModel {
         ");
         return $stmt->execute([$id]);
     }
-
+    
     // =========================
     // 🔥 NOUVEAU : RECHERCHE + FILTRE
     // =========================

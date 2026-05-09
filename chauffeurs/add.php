@@ -1,11 +1,15 @@
 <?php
 require_once "../config/database.php";
 require_once "../models/ChauffeurModel.php";
+require_once "../models/VehicleModel.php";
 
 $db = new Database();
 $conn = $db->getConnection();
 
 $model = new ChauffeurModel($conn);
+
+$vehicleModel = new VehicleModel($conn);
+$vehicles = $vehicleModel->getAll();
 
 if($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -49,31 +53,31 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <form method="POST" class="row g-3">
 
-<!-- NOM -->
+<!-- Nom -->
 <div class="col-md-6">
 <label class="form-label">Nom</label>
-<input name="nom" class="form-control" placeholder="Nom" required>
+<input name="nom" class="form-control" required>
 </div>
 
-<!-- PRENOM -->
+<!-- Prénom -->
 <div class="col-md-6">
 <label class="form-label">Prénom</label>
-<input name="prenom" class="form-control" placeholder="Prénom" required>
+<input name="prenom" class="form-control" required>
 </div>
 
-<!-- TELEPHONE -->
+<!-- Téléphone -->
 <div class="col-md-6">
 <label class="form-label">Téléphone</label>
-<input name="telephone" class="form-control" placeholder="Téléphone">
+<input name="telephone" class="form-control">
 </div>
 
-<!-- DATE EMBauche -->
+<!-- Date embauche -->
 <div class="col-md-6">
 <label class="form-label">Date d'embauche</label>
 <input type="date" name="date_embauche" class="form-control">
 </div>
 
-<!-- GRADE -->
+<!-- Grade -->
 <div class="col-md-6">
 <label class="form-label">Grade</label>
 <select name="grade" class="form-select">
@@ -88,7 +92,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 </select>
 </div>
 
-<!-- NIVEAU -->
+<!-- Niveau -->
 <div class="col-md-6">
 <label class="form-label">Niveau</label>
 <select name="niveau" class="form-select">
@@ -98,31 +102,38 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 </select>
 </div>
 
-<!-- PERMIS -->
+<!-- Permis -->
 <div class="col-md-6">
 <label class="form-label">Type permis</label>
-<input name="type_permis" class="form-control" placeholder="Ex: B, C, D...">
+<input name="type_permis" class="form-control">
 </div>
 
-<!-- VEHICULE -->
+<!-- Véhicule -->
 <div class="col-md-6">
-<label class="form-label">Véhicule responsable (ID)</label>
-<input name="vehicle_id" class="form-control" placeholder="Optionnel">
+<label class="form-label">Véhicule responsable (optionnel)</label>
+<select name="vehicle_id" class="form-select">
+    <option value="">-- Aucun véhicule --</option>
+    <?php foreach($vehicles as $v): ?>
+        <option value="<?= $v['id'] ?>">
+            <?= $v['numero'] ?> - <?= $v['marque'] ?> <?= $v['modele'] ?>
+        </option>
+    <?php endforeach; ?>
+</select>
 </div>
 
-<!-- MATRICULE -->
+<!-- Matricule -->
 <div class="col-md-6">
 <label class="form-label">Matricule</label>
-<input name="matricule" class="form-control" placeholder="Matricule" required>
+<input name="matricule" class="form-control" required>
 </div>
 
 <!-- CIN -->
 <div class="col-md-6">
 <label class="form-label">CIN</label>
-<input name="cine" class="form-control" placeholder="CIN" required>
+<input name="cine" class="form-control" required>
 </div>
 
-<!-- STATUT -->
+<!-- Statut -->
 <div class="col-md-6">
 <label class="form-label">Statut</label>
 <select name="statut" id="statut" class="form-select" onchange="toggleDet()">
@@ -133,24 +144,24 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 </select>
 </div>
 
-<!-- DETACHEMENT -->
+<!-- Détachement -->
 <div id="detachement" class="col-12" style="display:none">
 
-<label class="form-label">Lieu de détachement</label>
-<input name="lieu_detachement" class="form-control mb-2" placeholder="Lieu détachement">
+<label class="form-label">Lieu détachement</label>
+<input name="lieu_detachement" class="form-control mb-2">
 
-<label class="form-label">Date de détachement</label>
+<label class="form-label">Date détachement</label>
 <input type="date" name="date_detachement" class="form-control">
 
 </div>
 
-<!-- ADRESSE -->
+<!-- Adresse -->
 <div class="col-12">
 <label class="form-label">Adresse</label>
-<textarea name="adresse" class="form-control" placeholder="Adresse"></textarea>
+<textarea name="adresse" class="form-control"></textarea>
 </div>
 
-<!-- SUBMIT -->
+<!-- Submit -->
 <div class="col-12">
 <button class="btn btn-success">Ajouter chauffeur</button>
 </div>
