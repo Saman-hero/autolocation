@@ -11,23 +11,24 @@ try {
 
     $conn->beginTransaction();
 
-    // 1. Mettre à jour la mission
+    // ✅ 1. Mettre à jour mission + date_fin
     $stmt = $conn->prepare("
         UPDATE missions 
         SET statut = 'terminée',
+            date_fin = NOW(),
             commentaire = ?
         WHERE id = ?
     ");
     $stmt->execute([$commentaire, $id]);
 
-    // 2. récupérer l’équipe
+    // ✅ 2. récupérer l’équipe
     $team = $conn->prepare("
         SELECT * FROM mission_affectations WHERE mission_id = ?
     ");
     $team->execute([$id]);
     $members = $team->fetchAll();
 
-    // 3. libérer véhicules et chauffeurs
+    // ✅ 3. libérer véhicules et chauffeurs
     foreach ($members as $m) {
 
         if ($m['vehicle_id']) {
