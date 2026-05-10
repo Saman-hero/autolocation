@@ -290,7 +290,7 @@ body {
 .stat-card .stat-label  { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,.8); margin-top: .4rem; }
 .stat-card .stat-sub    { font-size: .75rem; color: rgba(255,255,255,.65); margin-top: .75rem; padding-top: .5rem; border-top: 1px solid rgba(255,255,255,.18); display: flex; gap: .75rem; flex-wrap: wrap; }
 
-/* Military color palette for stat cards */
+/* Stat card color palette */
 .stat-blue   { background: linear-gradient(135deg, #1b5e35, #2d8a52); }
 .stat-green  { background: linear-gradient(135deg, #a87830, #c9943a); }
 .stat-orange { background: linear-gradient(135deg, #9b1e24, #c0272d); }
@@ -316,10 +316,8 @@ body {
 /* ===== CUSTOM BADGES ===== */
 .badge { padding: .35em .65em; font-size: .72rem; font-weight: 600; border-radius: 5px; letter-spacing: .02em; }
 .badge-disponible  { background: #d1fae5; color: #065f46; }
-.badge-mission     { background: #fef3c7; color: #92400e; }
+.badge-loue        { background: #fef3c7; color: #92400e; }
 .badge-maintenance { background: #fee2e2; color: #991b1b; }
-.badge-conge       { background: #ede9fe; color: #5b21b6; }
-.badge-detache     { background: #dbeafe; color: #1e40af; }
 .badge-encours     { background: #fef3c7; color: #92400e; }
 .badge-terminee    { background: #d1fae5; color: #065f46; }
 .badge-annulee     { background: #fee2e2; color: #991b1b; }
@@ -381,11 +379,8 @@ body {
 #deleteModal .modal-header  { background: #fee2e2; border-radius: 12px 12px 0 0; border-bottom: 2px solid #fca5a5; }
 #deleteModal .modal-title   { color: #991b1b; font-weight: 700; }
 
-/* ===== MISSION VIEW ===== */
+/* ===== DETAIL VIEW ===== */
 .info-label { font-weight: 600; color: var(--text-muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .2rem; }
-.trajet-step { display: flex; align-items: center; gap: 1rem; padding: .85rem 1rem; border-radius: 8px; background: #f5f3ee; border: 1px solid var(--border); margin-bottom: .5rem; }
-.trajet-step .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; font-size: .75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.team-row { display: flex; align-items: center; gap: 1rem; padding: .85rem 1rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: .5rem; background: #f5f3ee; }
 
 /* ===== GOLD DIVIDER ===== */
 .gold-divider {
