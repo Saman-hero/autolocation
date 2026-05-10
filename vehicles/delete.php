@@ -11,5 +11,6 @@ if(isset($_GET['id'])) {
     $model->delete($_GET['id']);
 }
 
+flash('success', 'Véhicule supprimé.');
 header("Location: index.php");
 exit;
