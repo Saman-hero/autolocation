@@ -47,11 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     :root {
-      --primary: #1b5e35;
-      --accent:  #c9943a;
+      --primary: #1a3a5c;
+      --accent:  #f97316;
     }
     body {
-      background: linear-gradient(135deg, #0a2016 0%, #1b5e35 60%, #0a2016 100%);
+      background: linear-gradient(135deg, #0f2744 0%, #1a3a5c 60%, #0f2744 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       letter-spacing: .04em;
       transition: background .2s;
     }
-    .btn-login:hover { background: #154d2a; color: #fff; }
+    .btn-login:hover { background: #102640; color: #fff; }
     .login-footer {
       text-align: center;
       padding: .75rem;
