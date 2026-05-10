@@ -105,15 +105,15 @@ body {
   transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
 }
 .pnav-btn:hover {
-  background: rgba(201,148,58,.18);
-  border-color: rgba(201,148,58,.6);
+  background: rgba(249,115,22,.18);
+  border-color: rgba(249,115,22,.6);
   color: #fff;
 }
 .pnav-btn-active {
-  background: rgba(201,148,58,.25) !important;
+  background: rgba(249,115,22,.25) !important;
   border-color: var(--accent) !important;
   color: #fff !important;
-  box-shadow: 0 0 0 3px rgba(201,148,58,.15);
+  box-shadow: 0 0 0 3px rgba(249,115,22,.2);
 }
 .pnav-icon {
   font-size: 1rem;
@@ -131,8 +131,8 @@ body {
   top: calc(100% + 10px);
   left: 0;
   z-index: 9999;
-  background: #0b2518;
-  border: 1px solid rgba(201,148,58,.3);
+  background: #0d1f38;
+  border: 1px solid rgba(249,115,22,.3);
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0,0,0,.6);
   padding: .5rem;
@@ -192,7 +192,7 @@ body {
 
 .pnav-item.pnav-active {
   color: var(--accent) !important;
-  background: rgba(201,148,58,.1) !important;
+  background: rgba(249,115,22,.12) !important;
 }
 .pnav-item.pnav-active::before {
   content: '';
