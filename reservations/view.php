@@ -255,22 +255,33 @@ $rBadge = [
 </div>
 
 <!-- QR Code Modal -->
+<?php
+  // Utiliser l'IP locale pour que le QR soit scannable depuis un téléphone sur le même réseau
+  $serverIp = $_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname());
+  // Si localhost/127.0.0.1, récupérer l'IP LAN réelle
+  if (in_array($serverIp, ['127.0.0.1', '::1', 'localhost'])) {
+      $serverIp = trim(shell_exec("ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}'") ?: $serverIp);
+  }
+  $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+  $port     = $_SERVER['SERVER_PORT'] ?? '80';
+  $portStr  = ($protocol === 'http' && $port == 80) || ($protocol === 'https' && $port == 443) ? '' : ':' . $port;
+  $viewUrl  = $protocol . '://' . $serverIp . $portStr . '/location/reservations/view.php?id=' . $id;
+?>
 <div id="qrModal" onclick="this.style.display='none'"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center">
   <div onclick="event.stopPropagation()"
-       style="background:#fff;border-radius:16px;padding:2rem;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);max-width:320px;width:90%">
-    <div style="font-weight:700;font-size:1rem;color:#1a3a5c;margin-bottom:.5rem">
+       style="background:#fff;border-radius:16px;padding:2rem;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);max-width:340px;width:90%">
+    <div style="font-weight:700;font-size:1rem;color:#1a3a5c;margin-bottom:.25rem">
       QR Code — <?= htmlspecialchars($r['reference']) ?>
     </div>
-    <div style="font-size:.75rem;color:#888;margin-bottom:1rem">Scanne pour ouvrir cette réservation</div>
-    <?php
-      $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-      $viewUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/location/reservations/view.php?id=' . $id;
-      $qrImg    = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=' . urlencode($viewUrl);
-    ?>
-    <img src="<?= htmlspecialchars($qrImg) ?>" width="200" height="200"
-         style="border:1px solid #e2e8f0;border-radius:8px;padding:6px" alt="QR Code">
-    <div style="margin-top:.75rem;font-size:.7rem;color:#aaa;word-break:break-all"><?= htmlspecialchars($viewUrl) ?></div>
+    <div style="font-size:.75rem;color:#888;margin-bottom:1rem">Scanne depuis un téléphone sur le même réseau WiFi</div>
+
+    <!-- QR généré côté client (qrcode.js) -->
+    <div id="qrCanvas" style="display:inline-block;padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;margin-bottom:.75rem"></div>
+
+    <div style="font-size:.68rem;color:#aaa;word-break:break-all;padding:0 .5rem">
+      <?= htmlspecialchars($viewUrl) ?>
+    </div>
     <button onclick="document.getElementById('qrModal').style.display='none'"
             style="margin-top:1rem;padding:.45rem 1.5rem;background:#1a3a5c;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">
       Fermer
@@ -279,5 +290,27 @@ $rBadge = [
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// Générer le QR code côté client
+var qrGenerated = false;
+var qrViewUrl   = <?= json_encode($viewUrl) ?>;
+
+document.querySelector('[title="QR Code"]').addEventListener('click', function() {
+  document.getElementById('qrModal').style.display = 'flex';
+  if (!qrGenerated) {
+    document.getElementById('qrCanvas').innerHTML = '';
+    new QRCode(document.getElementById('qrCanvas'), {
+      text:          qrViewUrl,
+      width:         200,
+      height:        200,
+      colorDark:     '#1a3a5c',
+      colorLight:    '#ffffff',
+      correctLevel:  QRCode.CorrectLevel.M
+    });
+    qrGenerated = true;
+  }
+});
+</script>
 </body>
 </html>

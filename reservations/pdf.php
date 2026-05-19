@@ -30,10 +30,15 @@ $totalPaye  = array_sum(array_column($paiements, 'montant'));
 
 $dateGeneration = date('d/m/Y à H:i');
 
-// URL de la réservation encodée pour le QR code
+// URL scannable (IP LAN pour usage mobile sur le même réseau)
+$serverIp  = $_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname());
+if (in_array($serverIp, ['127.0.0.1', '::1', 'localhost'])) {
+    $serverIp = trim(shell_exec("ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}'") ?: $serverIp);
+}
 $protocol  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$baseUrl   = $protocol . '://' . $_SERVER['HTTP_HOST'];
-$viewUrl   = $baseUrl . '/location/reservations/view.php?id=' . $id;
+$port      = $_SERVER['SERVER_PORT'] ?? '80';
+$portStr   = ($protocol === 'http' && $port == 80) || ($protocol === 'https' && $port == 443) ? '' : ':' . $port;
+$viewUrl   = $protocol . '://' . $serverIp . $portStr . '/location/reservations/view.php?id=' . $id;
 $qrUrl     = 'https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=' . urlencode($viewUrl);
 ?>
 <!DOCTYPE html>
