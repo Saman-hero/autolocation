@@ -13,7 +13,7 @@ $r = $conn->prepare("
            c.telephone AS client_tel, c.email AS client_email,
            c.adresse AS client_adresse, c.permis_numero, c.permis_expiration,
            v.numero AS vehicle_numero, v.marque, v.modele, v.couleur,
-           v.immatriculation, v.categorie, v.carburant AS vehicle_carburant
+           v.immatriculation, v.categorie, v.annee
     FROM reservations r
     JOIN clients c ON r.client_id = c.id
     JOIN vehicles v ON r.vehicle_id = v.id
@@ -212,8 +212,8 @@ $viewUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/location/reservations/
         <div class="value"><?= htmlspecialchars($r['couleur'] ?: '—') ?></div>
       </div>
       <div class="info-box">
-        <div class="label">Carburant</div>
-        <div class="value"><?= htmlspecialchars($r['vehicle_carburant'] ?: '—') ?></div>
+        <div class="label">Année</div>
+        <div class="value"><?= htmlspecialchars($r['annee'] ?: '—') ?></div>
       </div>
     </div>
   </div>
