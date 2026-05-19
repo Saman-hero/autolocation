@@ -62,6 +62,7 @@ $rBadge = [
       <?php endif; ?>
       <a href="pdf.php?id=<?= $id ?>" class="btn btn-outline-secondary" target="_blank">🖨 Contrat</a>
       <a href="invoice.php?id=<?= $id ?>" class="btn btn-outline-secondary" target="_blank">📄 Facture</a>
+      <button class="btn btn-outline-dark" onclick="document.getElementById('qrModal').style.display='flex'" title="QR Code">⬛ QR</button>
     </div>
   </div>
 
@@ -250,6 +251,30 @@ $rBadge = [
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- QR Code Modal -->
+<div id="qrModal" onclick="this.style.display='none'"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+  <div onclick="event.stopPropagation()"
+       style="background:#fff;border-radius:16px;padding:2rem;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);max-width:320px;width:90%">
+    <div style="font-weight:700;font-size:1rem;color:#1a3a5c;margin-bottom:.5rem">
+      QR Code — <?= htmlspecialchars($r['reference']) ?>
+    </div>
+    <div style="font-size:.75rem;color:#888;margin-bottom:1rem">Scanne pour ouvrir cette réservation</div>
+    <?php
+      $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+      $viewUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/location/reservations/view.php?id=' . $id;
+      $qrImg    = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=' . urlencode($viewUrl);
+    ?>
+    <img src="<?= htmlspecialchars($qrImg) ?>" width="200" height="200"
+         style="border:1px solid #e2e8f0;border-radius:8px;padding:6px" alt="QR Code">
+    <div style="margin-top:.75rem;font-size:.7rem;color:#aaa;word-break:break-all"><?= htmlspecialchars($viewUrl) ?></div>
+    <button onclick="document.getElementById('qrModal').style.display='none'"
+            style="margin-top:1rem;padding:.45rem 1.5rem;background:#1a3a5c;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+      Fermer
+    </button>
   </div>
 </div>
 

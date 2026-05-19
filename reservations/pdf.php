@@ -29,6 +29,12 @@ $paiements = $paiements->fetchAll();
 $totalPaye  = array_sum(array_column($paiements, 'montant'));
 
 $dateGeneration = date('d/m/Y à H:i');
+
+// URL de la réservation encodée pour le QR code
+$protocol  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$baseUrl   = $protocol . '://' . $_SERVER['HTTP_HOST'];
+$viewUrl   = $baseUrl . '/location/reservations/view.php?id=' . $id;
+$qrUrl     = 'https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=' . urlencode($viewUrl);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -112,6 +118,11 @@ $dateGeneration = date('d/m/Y à H:i');
     .print-btn:hover { background: #f97316; }
 
     .footer { border-top: 1px solid #d1dbe6; margin-top: 20px; padding-top: 8px; text-align: center; font-size: 7.5pt; color: #aaa; }
+
+    /* QR code */
+    .qr-block { text-align: center; }
+    .qr-block img { display: block; margin: 0 auto 4px; border: 1px solid #d1dbe6; border-radius: 4px; padding: 3px; background: #fff; }
+    .qr-block .qr-label { font-size: 7pt; color: #aaa; }
   </style>
 </head>
 <body>
@@ -130,18 +141,24 @@ $dateGeneration = date('d/m/Y à H:i');
         contact@autolocation.ma
       </div>
     </div>
-    <div class="contract-meta">
-      <div class="contract-title">Contrat de Location</div>
-      <div class="contract-ref"><?= htmlspecialchars($r['reference']) ?></div>
-      <div class="contract-date">Généré le <?= $dateGeneration ?></div>
-      <?php
-        $statusClass = match($r['statut']) {
-            'en cours'  => 'status-encours',
-            'terminée'  => 'status-terminee',
-            default     => 'status-default',
-        };
-      ?>
-      <div class="mt-2"><span class="status-badge <?= $statusClass ?>"><?= ucfirst($r['statut']) ?></span></div>
+    <div style="display:flex;align-items:flex-start;gap:16px">
+      <div class="contract-meta">
+        <div class="contract-title">Contrat de Location</div>
+        <div class="contract-ref"><?= htmlspecialchars($r['reference']) ?></div>
+        <div class="contract-date">Généré le <?= $dateGeneration ?></div>
+        <?php
+          $statusClass = match($r['statut']) {
+              'en cours'  => 'status-encours',
+              'terminée'  => 'status-terminee',
+              default     => 'status-default',
+          };
+        ?>
+        <div class="mt-2"><span class="status-badge <?= $statusClass ?>"><?= ucfirst($r['statut']) ?></span></div>
+      </div>
+      <div class="qr-block">
+        <img src="<?= htmlspecialchars($qrUrl) ?>" width="110" height="110" alt="QR Code">
+        <div class="qr-label">Scan pour vérifier</div>
+      </div>
     </div>
   </div>
 
@@ -317,7 +334,8 @@ $dateGeneration = date('d/m/Y à H:i');
   </div>
 
   <div class="footer">
-    AutoLocation — Contrat réf. <?= htmlspecialchars($r['reference']) ?> — Généré le <?= $dateGeneration ?>
+    AutoLocation — Contrat réf. <?= htmlspecialchars($r['reference']) ?> — Généré le <?= $dateGeneration ?><br>
+    Vérification : <?= htmlspecialchars($viewUrl) ?>
   </div>
 
 </div>
