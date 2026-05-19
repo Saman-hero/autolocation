@@ -1,6 +1,8 @@
 <?php
 require_once "../config/database.php";
 require_once "../models/ReservationModel.php";
+require_once "../includes/audit.php";
+require_once "../includes/mailer.php";
 
 $db    = new Database();
 $conn  = $db->getConnection();
@@ -17,16 +19,32 @@ if (!$r || $r['statut'] !== 'en cours') {
     header("Location: index.php"); exit;
 }
 
+// Calcul retard
+$now          = new DateTime();
+$debut        = new DateTime($r['date_debut']);
+$finPrevue    = new DateTime($r['date_fin_prevue']);
+$joursEcoules = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp()) / 86400));
+
+$enRetard    = $now > $finPrevue;
+$joursRetard = 0;
+$fraisRetard = 0;
+
+if ($enRetard) {
+    $joursRetard = (int)ceil(($now->getTimestamp() - $finPrevue->getTimestamp()) / 86400);
+    $fraisRetard = $joursRetard * $r['prix_jour'];
+}
+
+$joursPrevus    = $r['nb_jours'] ?? $joursEcoules;
+$montantBase    = $joursPrevus * $r['prix_jour'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $kmRetour   = $_POST['km_retour'] !== '' ? (int)$_POST['km_retour'] : null;
-    $fraisExtra = (float)($_POST['frais_extra'] ?? 0);
+    $kmRetour    = $_POST['km_retour'] !== '' ? (int)$_POST['km_retour'] : null;
+    $fraisExtra  = (float)($_POST['frais_extra'] ?? 0);
     $commentaire = trim($_POST['commentaire'] ?? '');
 
     // Recalculer durée réelle et total
-    $now       = new DateTime();
-    $debut     = new DateTime($r['date_debut']);
     $nbJoursReel = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp()) / 86400));
-    $total     = $nbJoursReel * $r['prix_jour'] + $fraisExtra;
+    $total       = $nbJoursReel * $r['prix_jour'] + $fraisExtra;
 
     $conn->prepare("
         UPDATE reservations SET
@@ -49,15 +67,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              ->execute([$kmRetour, $r['vehicle_id'], $kmRetour]);
     }
 
+    audit_log($conn, 'FINISH', 'reservations', $id, "Réservation {$r['reference']} clôturée — Total: " . number_format($total, 2) . " MAD" . ($enRetard ? " (retard: $joursRetard j)" : ''));
+
+    // Send late alert email if applicable
+    if ($enRetard) {
+        try {
+            $clientData = $conn->query("SELECT * FROM clients WHERE id={$r['client_id']}")->fetch();
+            $vehicleData = $conn->query("SELECT * FROM vehicles WHERE id={$r['vehicle_id']}")->fetch();
+            if ($clientData && $vehicleData) {
+                sendLateAlert($clientData, $r);
+            }
+        } catch (Exception $e) { /* non critique */ }
+    }
+
     flash('success', 'Location clôturée. Total : ' . number_format($total, 2) . ' MAD.');
     header("Location: view.php?id=$id");
     exit;
 }
 
-// Calcul estimé
-$now   = new DateTime();
-$debut = new DateTime($r['date_debut']);
-$joursEcoules = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp()) / 86400));
+// Frais extra initiaux = frais de retard calculés
+$fraisExtraInitial = $fraisRetard;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -71,7 +100,7 @@ $joursEcoules = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp())
 <body>
 <?php include "../includes/navbar.php"; ?>
 
-<div class="container py-4" style="max-width:600px">
+<div class="container py-4" style="max-width:650px">
   <div class="page-header">
     <div>
       <div class="text-muted small mb-1"><a href="view.php?id=<?= $id ?>" class="text-decoration-none text-muted"><?= htmlspecialchars($r['reference']) ?></a> / Clôturer</div>
@@ -80,10 +109,44 @@ $joursEcoules = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp())
     <a href="view.php?id=<?= $id ?>" class="btn btn-outline-secondary">← Retour</a>
   </div>
 
-  <div class="alert alert-info mb-3">
-    Durée écoulée : <strong><?= $joursEcoules ?> jour(s)</strong> ·
-    Total estimé : <strong><?= number_format($joursEcoules * $r['prix_jour'], 2) ?> MAD</strong>
+  <!-- Résumé durée -->
+  <div class="alert alert-info mb-3 d-flex align-items-center gap-3">
+    <div>
+      <strong>Durée écoulée : <?= $joursEcoules ?> jour(s)</strong><br>
+      <small>Début : <?= date('d/m/Y H:i', strtotime($r['date_debut'])) ?> — Maintenant : <?= $now->format('d/m/Y H:i') ?></small>
+    </div>
   </div>
+
+  <!-- Alerte retard -->
+  <?php if ($enRetard): ?>
+  <div class="alert alert-danger mb-3">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span style="font-size:1.3rem">🔴</span>
+      <strong>Retard de <?= $joursRetard ?> jour(s) !</strong>
+    </div>
+    <div class="row g-2">
+      <div class="col-sm-4">
+        <div class="bg-white rounded p-2 text-center">
+          <div class="text-muted small">Retour prévu</div>
+          <div class="fw-bold"><?= $finPrevue->format('d/m/Y') ?></div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="bg-white rounded p-2 text-center">
+          <div class="text-muted small">Jours de retard</div>
+          <div class="fw-bold text-danger"><?= $joursRetard ?> jour(s)</div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="bg-white rounded p-2 text-center">
+          <div class="text-muted small">Frais de retard</div>
+          <div class="fw-bold text-danger"><?= number_format($fraisRetard, 2) ?> MAD</div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-2 small">Les frais de retard (<?= number_format($r['prix_jour'], 2) ?> MAD/j × <?= $joursRetard ?> j) ont été pré-remplis dans le champ ci-dessous.</div>
+  </div>
+  <?php endif; ?>
 
   <div class="card">
     <div class="card-body">
@@ -102,13 +165,36 @@ $joursEcoules = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp())
         <div class="col-md-6">
           <label class="form-label fw-semibold">Frais extra (MAD)</label>
           <input type="number" name="frais_extra" id="fraisExtra" class="form-control"
-                 step="0.01" min="0" value="0" onchange="calcFinal()" placeholder="Carburant, dégâts…">
+                 step="0.01" min="0" value="<?= $fraisExtraInitial ?>" onchange="calcFinal()"
+                 placeholder="Retard, carburant, dégâts…">
+          <?php if ($enRetard): ?>
+          <div class="form-text text-danger">Inclus frais retard : <?= number_format($fraisRetard, 2) ?> MAD</div>
+          <?php endif; ?>
         </div>
 
+        <!-- Récapitulatif financier -->
         <div class="col-12">
-          <label class="form-label fw-semibold">Total final estimé</label>
-          <div class="form-control bg-light fw-bold text-primary" id="totalFinal">
-            <?= number_format($joursEcoules * $r['prix_jour'], 2) ?> MAD
+          <div class="card bg-light border-0">
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between py-1 border-bottom small">
+                <span class="text-muted">Location de base (<?= $joursEcoules ?> j × <?= number_format($r['prix_jour'], 2) ?> MAD)</span>
+                <span class="fw-semibold" id="montantBase"><?= number_format($joursEcoules * $r['prix_jour'], 2) ?> MAD</span>
+              </div>
+              <?php if ($enRetard): ?>
+              <div class="d-flex justify-content-between py-1 border-bottom small text-danger">
+                <span>Frais retard (<?= $joursRetard ?> j × <?= number_format($r['prix_jour'], 2) ?> MAD)</span>
+                <span class="fw-semibold"><?= number_format($fraisRetard, 2) ?> MAD</span>
+              </div>
+              <?php endif; ?>
+              <div class="d-flex justify-content-between py-1 border-bottom small">
+                <span class="text-muted">Frais extra / autres</span>
+                <span class="fw-semibold" id="fraisDisplay"><?= number_format($fraisExtraInitial, 2) ?> MAD</span>
+              </div>
+              <div class="d-flex justify-content-between py-2 fw-bold">
+                <span class="text-primary">TOTAL FINAL</span>
+                <span class="text-primary fs-6" id="totalFinal"><?= number_format($joursEcoules * $r['prix_jour'] + $fraisExtraInitial, 2) ?> MAD</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -130,12 +216,14 @@ $joursEcoules = max(1, (int)ceil(($now->getTimestamp() - $debut->getTimestamp())
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const joursEcoules = <?= $joursEcoules ?>;
-const prixJour = <?= $r['prix_jour'] ?>;
+const prixJour     = <?= (float)$r['prix_jour'] ?>;
 
 function calcFinal() {
   const extra = parseFloat(document.getElementById('fraisExtra').value) || 0;
-  const total = joursEcoules * prixJour + extra;
-  document.getElementById('totalFinal').textContent = total.toFixed(2) + ' MAD';
+  const base  = joursEcoules * prixJour;
+  const total = base + extra;
+  document.getElementById('fraisDisplay').textContent = extra.toFixed(2) + ' MAD';
+  document.getElementById('totalFinal').textContent   = total.toFixed(2) + ' MAD';
 }
 </script>
 </body>

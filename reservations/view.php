@@ -60,7 +60,8 @@ $rBadge = [
       <?php elseif ($r['statut'] === 'en cours'): ?>
         <a href="finish.php?id=<?= $id ?>" class="btn btn-warning">Clôturer</a>
       <?php endif; ?>
-      <a href="print.php?id=<?= $id ?>" class="btn btn-outline-secondary" target="_blank">🖨 Contrat</a>
+      <a href="pdf.php?id=<?= $id ?>" class="btn btn-outline-secondary" target="_blank">🖨 Contrat</a>
+      <a href="invoice.php?id=<?= $id ?>" class="btn btn-outline-secondary" target="_blank">📄 Facture</a>
     </div>
   </div>
 
@@ -232,9 +233,18 @@ $rBadge = [
           <?php endif; ?>
         </div>
         <?php if ($r['statut'] !== 'terminée' && $r['statut'] !== 'annulée'): ?>
-        <div class="card-footer">
+        <div class="card-footer d-flex flex-column gap-2">
           <a href="/location/sinistres/add.php?reservation_id=<?= $id ?>&vehicle_id=<?= $r['vehicle_id'] ?>&client_id=<?= $r['client_id'] ?>"
              class="btn btn-sm btn-outline-danger w-100">+ Déclarer un sinistre</a>
+          <a href="/location/etat-vehicule/add.php?reservation_id=<?= $id ?>&type=depart"
+             class="btn btn-sm btn-outline-primary w-100">🚗 État au départ</a>
+          <a href="/location/etat-vehicule/add.php?reservation_id=<?= $id ?>&type=retour"
+             class="btn btn-sm btn-outline-success w-100">🏁 État au retour</a>
+        </div>
+        <?php else: ?>
+        <div class="card-footer">
+          <a href="/location/etat-vehicule/add.php?reservation_id=<?= $id ?>&type=retour"
+             class="btn btn-sm btn-outline-success w-100">🏁 Fiche état retour</a>
         </div>
         <?php endif; ?>
       </div>

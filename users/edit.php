@@ -1,5 +1,6 @@
 <?php
 require_once "../config/database.php";
+require_once "../includes/audit.php";
 
 if ($_SESSION['user_role'] !== 'admin') {
     flash('danger', 'Accès réservé aux administrateurs.');
@@ -58,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_nom']  = $prenom . ' ' . $nom;
             $_SESSION['username']  = $username;
         }
+        audit_log($conn, 'UPDATE', 'users', $id, "Utilisateur mis à jour : $username ($role)");
         flash('success', "Utilisateur « $username » mis à jour.");
         header("Location: index.php"); exit;
     }

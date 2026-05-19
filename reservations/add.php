@@ -3,6 +3,8 @@ require_once "../config/database.php";
 require_once "../models/ReservationModel.php";
 require_once "../models/VehicleModel.php";
 require_once "../models/ClientModel.php";
+require_once "../includes/audit.php";
+require_once "../includes/mailer.php";
 
 $db    = new Database();
 $conn  = $db->getConnection();
@@ -55,6 +57,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_POST['statut'] === 'en cours') {
             $conn->prepare("UPDATE vehicles SET statut='loué' WHERE id=?")->execute([$vehicleId]);
         }
+
+        // Audit
+        $clientName = '';
+        $vNum = '';
+        foreach ($clients as $cl) { if ($cl['id'] == $clientId) { $clientName = $cl['nom'] . ' ' . $cl['prenom']; break; } }
+        foreach ($vehicles as $vv) { if ($vv['id'] == $vehicleId) { $vNum = $vv['numero']; break; } }
+        audit_log($conn, 'CREATE', 'reservations', $resId, "Réservation $ref créée pour $clientName — véhicule $vNum");
+
+        // Email de confirmation
+        try {
+            $clientFull = $conn->prepare("SELECT * FROM clients WHERE id=?")->execute([$clientId]) ? $conn->query("SELECT * FROM clients WHERE id=$clientId")->fetch() : null;
+            $vehicleFull = $conn->prepare("SELECT * FROM vehicles WHERE id=?")->execute([$vehicleId]) ? $conn->query("SELECT * FROM vehicles WHERE id=$vehicleId")->fetch() : null;
+            $resFull = $conn->prepare("SELECT * FROM reservations WHERE id=?")->execute([$resId]) ? $conn->query("SELECT * FROM reservations WHERE id=$resId")->fetch() : null;
+            if ($clientFull && $vehicleFull && $resFull) {
+                sendReservationConfirmation($clientFull, $resFull, $vehicleFull);
+            }
+        } catch (Exception $e) { /* Email non critique */ }
 
         flash('success', "Réservation $ref créée avec succès.");
         header("Location: view.php?id=$resId");
@@ -117,7 +136,7 @@ foreach ($vehicles as $v) {
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Client <span class="text-danger">*</span></label>
-          <select name="client_id" class="form-select" required>
+          <select name="client_id" id="clientSelect" class="form-select" required onchange="checkClientLicense(this.value)">
             <option value="">— Sélectionner un client —</option>
             <?php foreach ($clients as $c): ?>
               <option value="<?= $c['id'] ?>" <?= (($preClientId ?: ($_POST['client_id'] ?? 0)) == $c['id']) ? 'selected' : '' ?>>
@@ -125,6 +144,8 @@ foreach ($vehicles as $v) {
               </option>
             <?php endforeach; ?>
           </select>
+          <div id="licenseAlert" style="display:none" class="mt-2"></div>
+          <input type="hidden" id="licenseBlocked" name="license_blocked" value="0">
         </div>
 
         <div class="col-md-6">
@@ -218,6 +239,48 @@ function calcTotal() {
     document.getElementById('totalDisplay').textContent = '—';
   }
 }
+
+function checkClientLicense(clientId) {
+  const alertEl   = document.getElementById('licenseAlert');
+  const blockedEl = document.getElementById('licenseBlocked');
+  const submitBtn = document.querySelector('[type=submit]');
+  if (!clientId) { alertEl.style.display = 'none'; blockedEl.value = '0'; return; }
+
+  fetch('/location/api/client-info.php?id=' + clientId)
+    .then(r => r.json()).then(data => {
+      if (data.error) { alertEl.style.display = 'none'; return; }
+      if (data.permis_status === 'expired') {
+        alertEl.innerHTML = '<div class="alert alert-danger py-2 mb-0"><strong>🚫 Permis expiré !</strong> ' + data.permis_msg + '<br><small>La soumission du formulaire est bloquée.</small></div>';
+        alertEl.style.display = 'block';
+        blockedEl.value = '1';
+        submitBtn.disabled = true;
+        submitBtn.title = 'Permis du client expiré';
+      } else if (data.permis_status === 'expiring') {
+        alertEl.innerHTML = '<div class="alert alert-warning py-2 mb-0"><strong>⚠ Attention !</strong> ' + data.permis_msg + '</div>';
+        alertEl.style.display = 'block';
+        blockedEl.value = '0';
+        submitBtn.disabled = false;
+      } else {
+        alertEl.style.display = 'none';
+        blockedEl.value = '0';
+        submitBtn.disabled = false;
+      }
+    }).catch(() => { alertEl.style.display = 'none'; });
+}
+
+// Check on load if client pre-selected
+document.addEventListener('DOMContentLoaded', function() {
+  const sel = document.getElementById('clientSelect');
+  if (sel && sel.value) checkClientLicense(sel.value);
+
+  // Block form if license is already blocked
+  document.getElementById('resForm').addEventListener('submit', function(e) {
+    if (document.getElementById('licenseBlocked').value === '1') {
+      e.preventDefault();
+      alert('Impossible de créer la réservation : le permis du client est expiré.');
+    }
+  });
+});
 </script>
 </body>
 </html>

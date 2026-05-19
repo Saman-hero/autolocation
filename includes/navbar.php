@@ -23,8 +23,11 @@ function navActive(string $path): string {
         <a href="/location/maintenance/index.php"   class="pnav-item <?= navActive('/maintenance') ?>"          style="--i:5"><span class="pnav-item-icon">🔧</span> Maintenance</a>
         <a href="/location/sinistres/index.php"     class="pnav-item <?= navActive('/sinistres') ?>"            style="--i:6"><span class="pnav-item-icon">⚠️</span> Sinistres</a>
         <a href="/location/historique/index.php"    class="pnav-item <?= navActive('/historique') ?>"           style="--i:7"><span class="pnav-item-icon">🕑</span> Historique</a>
+        <a href="/location/reservations/calendar.php"  class="pnav-item <?= navActive('/calendar') ?>"             style="--i:8"><span class="pnav-item-icon">📅</span> Calendrier</a>
         <?php if (!empty($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <a href="/location/users/index.php"         class="pnav-item <?= navActive('/users') ?>"                style="--i:8"><span class="pnav-item-icon">⚙️</span> Utilisateurs</a>
+        <a href="/location/users/index.php"         class="pnav-item <?= navActive('/users') ?>"                style="--i:9"><span class="pnav-item-icon">⚙️</span> Utilisateurs</a>
+        <a href="/location/admin/audit.php"         class="pnav-item <?= navActive('/admin/audit') ?>"          style="--i:10"><span class="pnav-item-icon">🔍</span> Journal d'audit</a>
+        <a href="/location/admin/setup-db.php"      class="pnav-item <?= navActive('/admin/setup') ?>"          style="--i:11"><span class="pnav-item-icon">🗄️</span> Config DB</a>
         <?php endif; ?>
       </div>
     </div>

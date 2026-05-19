@@ -1,5 +1,6 @@
 <?php
 require_once "../config/database.php";
+require_once "../includes/audit.php";
 
 $db   = new Database();
 $conn = $db->getConnection();
@@ -15,14 +16,16 @@ if (!$r || !in_array($r['statut'], ['en attente','confirmée'])) {
     header("Location: index.php"); exit;
 }
 
-$kmDepart = (int)$_GET['km'] ?? null;
+$kmDepart = (int)($_GET['km'] ?? 0) ?: null;
 
 // Démarrer : mettre à jour statut + km départ + statut véhicule
 $conn->prepare("UPDATE reservations SET statut='en cours', km_depart=? WHERE id=?")
-     ->execute([$kmDepart ?: null, $id]);
+     ->execute([$kmDepart, $id]);
 
 $conn->prepare("UPDATE vehicles SET statut='loué' WHERE id=?")
      ->execute([$r['vehicle_id']]);
+
+audit_log($conn, 'START', 'reservations', $id, "Location démarrée : réservation {$r['reference']}");
 
 flash('success', 'Location démarrée.');
 header("Location: view.php?id=$id");

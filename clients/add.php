@@ -1,6 +1,7 @@
 <?php
 require_once "../config/database.php";
 require_once "../models/ClientModel.php";
+require_once "../includes/audit.php";
 
 $db    = new Database();
 $conn  = $db->getConnection();
@@ -37,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':statut'            => 'actif',
             ':notes'             => trim($_POST['notes']) ?: null,
         ]);
+        $newId = (int)$conn->lastInsertId();
+        audit_log($conn, 'CREATE', 'clients', $newId, "Client créé : $nom $prenom" . ($cin ? " (CIN: $cin)" : ''));
         flash('success', 'Client ajouté avec succès.');
         header("Location: index.php");
         exit;
@@ -108,7 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">CIN / Passeport</label>
-          <input name="cin" class="form-control" placeholder="Ex: BE123456" value="<?= htmlspecialchars($_POST['cin'] ?? '') ?>">
+          <input name="cin" id="cinField" class="form-control" placeholder="Ex: BE123456" value="<?= htmlspecialchars($_POST['cin'] ?? '') ?>">
+          <div id="cinWarning" class="duplicate-warn" style="display:none"></div>
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Téléphone</label>
@@ -117,7 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Email</label>
-          <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+          <input type="email" name="email" id="emailField" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+          <div id="emailWarning" class="duplicate-warn" style="display:none"></div>
         </div>
         <div class="col-12">
           <label class="form-label fw-semibold">Adresse</label>
@@ -159,13 +164,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+.duplicate-warn {
+  background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b;
+  padding: 6px 10px; border-radius: 0 5px 5px 0; font-size: .82rem; margin-top: 4px;
+  animation: fadeSlideIn .25s ease;
+}
+@keyframes fadeSlideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+</style>
 <script>
 function toggleEntreprise() {
   const isEnt = document.getElementById('tc_ent').checked;
   document.getElementById('entreprise_row').style.display = isEnt ? 'block' : 'none';
 }
-// Init on load
 document.addEventListener('DOMContentLoaded', toggleEntreprise);
+
+function checkDuplicate(field, type, warnEl) {
+  const val = field.value.trim();
+  if (!val) { warnEl.style.display = 'none'; return; }
+  fetch('/location/api/check-duplicate.php?' + type + '=' + encodeURIComponent(val))
+    .then(r => r.json())
+    .then(data => {
+      if (data.exists) {
+        warnEl.innerHTML = '⚠ Ce ' + (type === 'cin' ? 'CIN' : 'email') + ' est déjà utilisé par : <strong>'
+          + data.client.prenom + ' ' + data.client.nom + '</strong>'
+          + ' <a href="/location/clients/view.php?id=' + data.client.id + '" target="_blank" class="ms-1">Voir fiche</a>';
+        warnEl.style.display = 'block';
+      } else {
+        warnEl.style.display = 'none';
+      }
+    })
+    .catch(() => { warnEl.style.display = 'none'; });
+}
+
+document.getElementById('cinField').addEventListener('blur', function() {
+  checkDuplicate(this, 'cin', document.getElementById('cinWarning'));
+});
+document.getElementById('emailField').addEventListener('blur', function() {
+  checkDuplicate(this, 'email', document.getElementById('emailWarning'));
+});
 </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 <?php
 require_once "../config/database.php";
 require_once "../models/ClientModel.php";
+require_once "../includes/audit.php";
 
 $db    = new Database();
 $conn  = $db->getConnection();
@@ -43,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':statut'           => $_POST['statut'],
             ':notes'            => trim($_POST['notes']) ?: null,
         ]);
+        audit_log($conn, 'UPDATE', 'clients', $id, "Client mis à jour : $nom $prenom (ID: $id)");
         flash('success', 'Client mis à jour.');
         header("Location: view.php?id=$id");
         exit;
@@ -116,7 +118,8 @@ $d = array_merge($c, $_POST);
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">CIN / Passeport</label>
-          <input name="cin" class="form-control" value="<?= htmlspecialchars($d['cin'] ?? '') ?>">
+          <input name="cin" id="cinField" class="form-control" value="<?= htmlspecialchars($d['cin'] ?? '') ?>">
+          <div id="cinWarning" class="duplicate-warn" style="display:none"></div>
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Téléphone</label>
@@ -125,7 +128,8 @@ $d = array_merge($c, $_POST);
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Email</label>
-          <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($d['email'] ?? '') ?>">
+          <input type="email" name="email" id="emailField" class="form-control" value="<?= htmlspecialchars($d['email'] ?? '') ?>">
+          <div id="emailWarning" class="duplicate-warn" style="display:none"></div>
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Statut</label>
@@ -175,12 +179,36 @@ $d = array_merge($c, $_POST);
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+.duplicate-warn { background:#fef3c7;color:#92400e;border-left:3px solid #f59e0b;padding:6px 10px;border-radius:0 5px 5px 0;font-size:.82rem;margin-top:4px;animation:fadeSlideIn .25s ease; }
+@keyframes fadeSlideIn { from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)} }
+</style>
 <script>
 function toggleEntreprise() {
   const isEnt = document.getElementById('tc_ent').checked;
   document.getElementById('entreprise_row').style.display = isEnt ? 'block' : 'none';
 }
 document.addEventListener('DOMContentLoaded', toggleEntreprise);
+
+const EXCLUDE_ID = <?= $id ?>;
+function checkDuplicate(field, type, warnEl) {
+  const val = field.value.trim();
+  if (!val) { warnEl.style.display = 'none'; return; }
+  fetch('/location/api/check-duplicate.php?' + type + '=' + encodeURIComponent(val) + '&exclude_id=' + EXCLUDE_ID)
+    .then(r => r.json()).then(data => {
+      if (data.exists) {
+        warnEl.innerHTML = '⚠ Déjà utilisé par : <strong>' + data.client.prenom + ' ' + data.client.nom + '</strong>'
+          + ' <a href="/location/clients/view.php?id=' + data.client.id + '" target="_blank" class="ms-1">Voir fiche</a>';
+        warnEl.style.display = 'block';
+      } else { warnEl.style.display = 'none'; }
+    }).catch(() => { warnEl.style.display = 'none'; });
+}
+document.getElementById('cinField').addEventListener('blur', function() {
+  checkDuplicate(this, 'cin', document.getElementById('cinWarning'));
+});
+document.getElementById('emailField').addEventListener('blur', function() {
+  checkDuplicate(this, 'email', document.getElementById('emailWarning'));
+});
 </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <?php
 require_once "../config/database.php";
+require_once "../includes/audit.php";
 
 if ($_SESSION['user_role'] !== 'admin') {
     flash('danger', 'Accès réservé aux administrateurs.');
@@ -38,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $conn->prepare("INSERT INTO users (nom, prenom, username, password, role) VALUES (?,?,?,?,?)")
              ->execute([$nom, $prenom, $username, $hash, $role]);
+        $newUserId = (int)$conn->lastInsertId();
+        audit_log($conn, 'CREATE', 'users', $newUserId, "Utilisateur créé : $username ($role)");
         flash('success', "Utilisateur « $username » créé avec succès.");
         header("Location: index.php"); exit;
     }

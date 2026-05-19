@@ -9,9 +9,10 @@ function flash(string $type, string $msg): void {
 }
 
 // Protect every page that includes this file
-// login.php and logout.php are excluded by checking the script name
+// Public pages excluded from authentication
 $_currentScript = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
-if (!in_array($_currentScript, ['login.php', 'logout.php']) && empty($_SESSION['logged_in'])) {
+$_publicPages   = ['login.php', 'logout.php', 'forgot-password.php', 'reset-password.php'];
+if (!in_array($_currentScript, $_publicPages) && empty($_SESSION['logged_in'])) {
     header("Location: /location/login.php");
     exit;
 }
@@ -19,6 +20,7 @@ if (!in_array($_currentScript, ['login.php', 'logout.php']) && empty($_SESSION['
 class Database {
 
     private $host = "localhost";
+    private $port = 3306;
     private $db_name = "location";
     private $username = "root";
     private $password = "";
@@ -31,7 +33,7 @@ class Database {
 
         try {
             $this->conn = new PDO(
-                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8",
+                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=utf8",
                 $this->username,
                 $this->password
             );

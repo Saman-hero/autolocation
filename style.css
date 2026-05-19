@@ -396,3 +396,104 @@ body {
   height: 3px;
   background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
 }
+
+/* ===== ANIMATIONS (Feature 13) ===== */
+
+/* Page entrance — cards & page-header fade-in-up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.card        { animation: fadeInUp .35s ease both; }
+.page-header { animation: fadeInUp .3s ease both; }
+
+/* Stagger for multiple cards in a row */
+.row .col-md-3:nth-child(1) .card,
+.row .col-md-3:nth-child(1) .stat-card { animation-delay: .05s; }
+.row .col-md-3:nth-child(2) .card,
+.row .col-md-3:nth-child(2) .stat-card { animation-delay: .10s; }
+.row .col-md-3:nth-child(3) .card,
+.row .col-md-3:nth-child(3) .stat-card { animation-delay: .15s; }
+.row .col-md-3:nth-child(4) .card,
+.row .col-md-3:nth-child(4) .stat-card { animation-delay: .20s; }
+
+/* Stat card hover enhancements */
+.stat-card {
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 14px 36px rgba(0,0,0,.18) !important;
+}
+
+/* Table rows staggered fade-in (set --i via PHP or JS) */
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+tbody tr {
+  animation: rowFadeIn .22s ease both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+/* Btn-success subtle pulse */
+@keyframes btnPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(26,58,92,.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(26,58,92,.0); }
+}
+.btn-success {
+  animation: btnPulse 2.5s infinite;
+}
+.btn-success:hover { animation: none; }
+
+/* Flash messages slide-in */
+@keyframes alertSlideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.alert {
+  animation: alertSlideIn .3s ease both;
+}
+.animate-flash { animation: alertSlideIn .3s ease both; }
+
+/* En cours badge pulse/glow */
+@keyframes badgeGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,.5); }
+  50%       { box-shadow: 0 0 6px 3px rgba(245,158,11,.2); }
+}
+.badge-encours, .badge-pulse {
+  animation: badgeGlow 2s infinite;
+}
+
+/* Form focus — smooth */
+.form-control, .form-select {
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+/* Skeleton shimmer for AJAX loading */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+  height: 18px;
+  display: inline-block;
+  width: 100%;
+}
+@keyframes shimmer {
+  from { background-position: 200% center; }
+  to   { background-position: -200% center; }
+}
+
+/* Page top loading bar */
+@keyframes pageLoad {
+  from { width: 0; opacity: 1; }
+  to   { width: 100%; opacity: 0; }
+}
+
+/* Card header subtle left border accent on hover */
+.card:hover > .card-header {
+  border-left: 3px solid var(--accent);
+  padding-left: calc(1.25rem - 3px);
+  transition: border-left .2s ease, padding-left .2s ease;
+}

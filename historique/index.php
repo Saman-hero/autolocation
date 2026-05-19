@@ -65,7 +65,11 @@ $rBadge = [
 
   <div class="page-header">
     <h1 class="page-title">Historique des locations</h1>
-    <span class="badge bg-secondary fs-6"><?= count($reservations) ?> résultat(s)</span>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-secondary fs-6"><?= count($reservations) ?> résultat(s)</span>
+      <a href="/location/export/reservations-csv.php?statut=terminée" class="btn btn-outline-secondary btn-sm">CSV</a>
+      <a href="/location/export/reservations-pdf.php?statut=terminée" class="btn btn-outline-secondary btn-sm" target="_blank">PDF</a>
+    </div>
   </div>
 
   <!-- Filtres -->
