@@ -194,4 +194,51 @@ INSERT INTO `users` (`nom`, `prenom`, `username`, `password`, `role`) VALUES
 INSERT INTO `reservations` (`reference`, `client_id`, `vehicle_id`, `statut`, `date_debut`, `date_fin_prevue`, `lieu_depart`, `lieu_retour`, `km_depart`, `prix_jour`, `nb_jours`, `caution`, `montant_total`, `created_by`) VALUES
 ('LOC-2026-001', 1, 1, 'en cours', '2026-05-08 09:00:00', '2026-05-12 09:00:00', 'Agence Casablanca', 'Agence Casablanca', 45000, 250.00, 4, 3000.00, 1000.00, 1);
 
+-- ============================================================
+-- NOUVELLES TABLES (fonctionnalités avancées)
+-- ============================================================
+
+-- Journal d'audit des actions utilisateurs
+CREATE TABLE IF NOT EXISTS `audit_logs` (
+  `id`          INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id`     INT,
+  `user_name`   VARCHAR(100),
+  `action`      VARCHAR(50) NOT NULL,
+  `table_name`  VARCHAR(50),
+  `record_id`   INT,
+  `description` TEXT,
+  `ip_address`  VARCHAR(45),
+  `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_created` (`created_at`),
+  INDEX `idx_user`    (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tokens de réinitialisation de mot de passe
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `id`         INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id`    INT NOT NULL,
+  `token`      VARCHAR(64) NOT NULL UNIQUE,
+  `expires_at` DATETIME NOT NULL,
+  `used`       TINYINT(1) DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Fiches état des véhicules (départ / retour)
+CREATE TABLE IF NOT EXISTS `etat_vehicule` (
+  `id`             INT AUTO_INCREMENT PRIMARY KEY,
+  `reservation_id` INT NOT NULL,
+  `vehicle_id`     INT NOT NULL,
+  `type`           ENUM('depart','retour') NOT NULL,
+  `carburant`      TINYINT DEFAULT 4 COMMENT '0-8 : par huitième',
+  `km`             INT,
+  `proprete`       ENUM('propre','moyen','sale') DEFAULT 'propre',
+  `rayures`        TINYINT(1) DEFAULT 0,
+  `dommages`       TEXT,
+  `notes`          TEXT,
+  `created_by`     INT,
+  `created_at`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`reservation_id`) REFERENCES `reservations`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`vehicle_id`)     REFERENCES `vehicles`(`id`)     ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 COMMIT;
