@@ -29,6 +29,8 @@ $resteAPayer = max(0, ($r['montant_total'] ?? 0) - $totalPaye);
 
 $invoiceNum = 'FAC-' . str_pad($id, 5, '0', STR_PAD_LEFT);
 $dateGeneration = date('d/m/Y');
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$viewUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/location/reservations/view.php?id=' . $id;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -130,11 +132,17 @@ $dateGeneration = date('d/m/Y');
         +212 5XX-XXXXXX
       </div>
     </div>
-    <div class="inv-title-block">
-      <div class="inv-title">Facture</div>
-      <div class="inv-num"><?= $invoiceNum ?></div>
-      <div class="inv-date">Date : <?= $dateGeneration ?></div>
-      <div class="inv-ref">Réf. location : <?= htmlspecialchars($r['reference']) ?></div>
+    <div style="display:flex;align-items:flex-start;gap:16px">
+      <div class="inv-title-block">
+        <div class="inv-title">Facture</div>
+        <div class="inv-num"><?= $invoiceNum ?></div>
+        <div class="inv-date">Date : <?= $dateGeneration ?></div>
+        <div class="inv-ref">Réf. location : <?= htmlspecialchars($r['reference']) ?></div>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div id="qrFacture" style="display:inline-block;padding:4px;border:1px solid #e2e8f0;border-radius:4px;background:#fff"></div>
+        <div style="font-size:7pt;color:#aaa;margin-top:3px">Scan pour vérifier</div>
+      </div>
     </div>
   </div>
 
@@ -266,5 +274,17 @@ $dateGeneration = date('d/m/Y');
   </div>
 
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+new QRCode(document.getElementById('qrFacture'), {
+  text:         <?= json_encode($viewUrl) ?>,
+  width:        100,
+  height:       100,
+  colorDark:    '#1a3a5c',
+  colorLight:   '#ffffff',
+  correctLevel: QRCode.CorrectLevel.M
+});
+</script>
 </body>
 </html>

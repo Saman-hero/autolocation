@@ -30,16 +30,8 @@ $totalPaye  = array_sum(array_column($paiements, 'montant'));
 
 $dateGeneration = date('d/m/Y à H:i');
 
-// URL scannable (IP LAN pour usage mobile sur le même réseau)
-$serverIp  = $_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname());
-if (in_array($serverIp, ['127.0.0.1', '::1', 'localhost'])) {
-    $serverIp = trim(shell_exec("ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}'") ?: $serverIp);
-}
-$protocol  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$port      = $_SERVER['SERVER_PORT'] ?? '80';
-$portStr   = ($protocol === 'http' && $port == 80) || ($protocol === 'https' && $port == 443) ? '' : ':' . $port;
-$viewUrl   = $protocol . '://' . $serverIp . $portStr . '/location/reservations/view.php?id=' . $id;
-$qrUrl     = 'https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=' . urlencode($viewUrl);
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$viewUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/location/reservations/view.php?id=' . $id;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -161,7 +153,7 @@ $qrUrl     = 'https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&
         <div class="mt-2"><span class="status-badge <?= $statusClass ?>"><?= ucfirst($r['statut']) ?></span></div>
       </div>
       <div class="qr-block">
-        <img src="<?= htmlspecialchars($qrUrl) ?>" width="110" height="110" alt="QR Code">
+        <div id="qrContrat" style="display:inline-block"></div>
         <div class="qr-label">Scan pour vérifier</div>
       </div>
     </div>
@@ -345,15 +337,20 @@ $qrUrl     = 'https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// Auto-trigger print dialog
+new QRCode(document.getElementById('qrContrat'), {
+  text:         <?= json_encode($viewUrl) ?>,
+  width:        110,
+  height:       110,
+  colorDark:    '#1a3a5c',
+  colorLight:   '#ffffff',
+  correctLevel: QRCode.CorrectLevel.M
+});
 window.addEventListener('load', function() {
-  // Small delay to ensure styles are loaded
-  setTimeout(function() {
-    if (window.location.search.indexOf('autoprint=1') !== -1) {
-      window.print();
-    }
-  }, 500);
+  if (window.location.search.indexOf('autoprint=1') !== -1) {
+    setTimeout(function() { window.print(); }, 800);
+  }
 });
 </script>
 </body>
