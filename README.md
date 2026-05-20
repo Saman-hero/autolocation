@@ -1,91 +1,135 @@
-# 🚌 Transport Management System
+# AutoLocation
 
-Une application web de gestion de flotte de transport développée en PHP, permettant la supervision complète des véhicules, des chauffeurs et des missions de transport.
-
----
-
-## 📋 Description
-
-**Transport Management System** est une solution web centralisée conçue pour simplifier et automatiser la gestion opérationnelle d'une organisation de transport. Elle permet aux administrateurs de suivre en temps réel l'ensemble des ressources : véhicules, chauffeurs, missions et historique des opérations.
+Système de gestion de flotte et de locations de véhicules développé en PHP/MySQL avec Bootstrap 5.
 
 ---
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
-- 🚗 **Gestion des véhicules** — Suivi et administration du parc automobile (ajout, modification, suppression)
-- 👨‍✈️ **Gestion des chauffeurs** — Recensement et gestion du personnel de conduite
-- 📋 **Gestion des missions** — Planification, assignation et suivi des trajets
-- 📂 **Historique des opérations** — Traçabilité complète des activités passées
-- ⚙️ **Configuration système** — Paramétrage centralisé de l'application
+- **Locations** — Cycle de vie complet : création, démarrage, clôture, historique
+- **Clients** — Gestion particuliers & entreprises, vérification permis, détection doublons
+- **Véhicules** — Suivi flotte, catégories, kilométrage, statut en temps réel
+- **Paiements** — Enregistrement multi-modes, suivi soldes, cautions
+- **Maintenance** — Planification entretiens, alertes vidange
+- **Sinistres** — Déclaration et suivi des incidents
+- **Calendrier** — Vue calendrier des réservations (FullCalendar v6)
+- **Contrat & Facture PDF** — Génération avec QR code intégré
+- **Export CSV** — Listes clients et réservations
+- **Journal d'audit** — Traçabilité complète des actions utilisateurs
+- **Tableau de bord** — KPIs animés, graphiques revenus et utilisation flotte
+- **Fiche état véhicule** — Rapport départ/retour (carburant, propreté, dommages)
+- **Recherche AJAX** — Recherche en temps réel sur toutes les listes
+- **Réinitialisation mot de passe** — Flux par token sécurisé
+- **Emails** — Notifications automatiques via PHP mail()
+- **Rôles** — Admin et Opérateur
 
 ---
 
-## 🛠️ Technologies utilisées
+## Technologies
 
 | Technologie | Rôle |
-|-------------|------|
-| PHP | Langage principal (back-end) |
-| MySQL / SQL | Base de données relationnelle |
-| CSS | Mise en forme et interface utilisateur |
+|---|---|
+| PHP 8+ | Back-end, logique métier |
+| MySQL | Base de données relationnelle |
+| Bootstrap 5.3 | Interface responsive |
+| Chart.js | Graphiques dashboard |
+| FullCalendar v6 | Calendrier réservations |
+| qrcode.js | Génération QR code côté client |
+| PDO | Accès base de données sécurisé |
 
 ---
 
-## 📁 Structure du projet
+## Structure
 
 ```
-transport/
-├── chauffeurs/       # Module de gestion des chauffeurs
-├── vehicles/         # Module de gestion des véhicules
-├── missions/         # Module de gestion des missions
-├── historique/       # Historique des opérations
-├── models/           # Modèles de données
-├── config/           # Fichiers de configuration
-├── includes/         # Composants réutilisables (header, footer, etc.)
-├── style.css         # Feuille de style principale
-└── transport.sql     # Script de création de la base de données
+autolocation/
+├── admin/              # Journal d'audit, setup DB
+├── api/                # Endpoints AJAX (search, duplicate check, calendar…)
+├── clients/            # Module clients (CRUD)
+├── config/             # Connexion base de données + auth
+├── cron/               # Scripts planifiés (rappels email)
+├── etat-vehicule/      # Fiches état départ/retour
+├── export/             # Export CSV / PDF listes
+├── historique/         # Historique des locations
+├── includes/           # Navbar, flash, audit, mailer
+├── maintenance/        # Module maintenance
+├── models/             # Modèles PDO (Client, Vehicle, Reservation, Paiement)
+├── paiements/          # Module paiements
+├── reservations/       # Module locations (CRUD + contrat + facture + calendrier)
+├── sinistres/          # Module sinistres
+├── users/              # Gestion utilisateurs (admin)
+├── vehicles/           # Module véhicules (CRUD)
+├── index.php           # Tableau de bord
+├── login.php           # Authentification
+├── forgot-password.php # Réinitialisation mot de passe
+├── style.css           # Styles globaux + animations
+└── location.sql        # Schéma complet + données de test
 ```
 
 ---
 
-## 🚀 Installation
+## Installation
 
 1. **Cloner le dépôt**
    ```bash
-   git clone https://github.com/basbassi/transport.git
-   cd transport
+   git clone https://github.com/Saman-hero/autolocation.git
+   cd autolocation
    ```
 
-2. **Configurer la base de données**
-   - Créer une base de données MySQL
-   - Importer le fichier `transport.sql` :
-     ```bash
-     mysql -u root -p nom_de_la_base < transport.sql
-     ```
+2. **Créer la base de données**
+   ```bash
+   mysql -u root -e "CREATE DATABASE location CHARACTER SET utf8mb4;"
+   mysql -u root location < location.sql
+   ```
 
-3. **Configurer la connexion**
-   - Modifier les paramètres de connexion dans le dossier `config/`
+3. **Configurer la connexion** dans `config/database.php`
+   ```php
+   private $host     = "localhost";
+   private $db_name  = "location";
+   private $username = "root";
+   private $password = "";
+   ```
 
-4. **Lancer l'application**
-   - Déposer le projet dans le répertoire de votre serveur web (ex: `htdocs`, `www`)
-   - Accéder à l'application via `http://localhost/transport`
+4. **Déposer dans le répertoire web**
+   ```
+   htdocs/location/
+   ```
+
+5. **Initialiser les tables avancées** — Visiter une fois :
+   ```
+   http://localhost/location/admin/setup-db.php
+   ```
+
+6. **Accéder à l'application**
+   ```
+   http://localhost/location/
+   ```
 
 ---
 
-## 📌 Prérequis
+## Connexion par défaut
 
-- PHP >= 7.4
+| Champ | Valeur |
+|---|---|
+| Identifiant | `admin` |
+| Mot de passe | `password` |
+
+---
+
+## Prérequis
+
+- PHP >= 8.0
 - MySQL >= 5.7
-- Serveur web Apache ou Nginx (ou XAMPP / WAMP pour le développement local)
+- Apache (XAMPP / WAMP / Laragon)
 
 ---
 
-## 👤 Auteur
+## Auteur
 
-**basbassi** — [GitHub](https://github.com/basbassi)
 **Saman-hero** — [GitHub](https://github.com/Saman-hero)
 
 ---
 
-## 📄 Licence
+## Licence
 
-Ce projet est à usage personnel/éducatif. Tous droits réservés © 2024 basbassi & Saman-hero.
+Usage personnel et éducatif. Tous droits réservés © 2026 Saman-hero.
