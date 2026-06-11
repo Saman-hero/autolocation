@@ -575,13 +575,13 @@ function getFuelType(array $v): string {
 <div class="container-fluid px-4 py-4" style="max-width:1300px">
 
   <!-- Header -->
-  <div class="page-header mb-4">
+  <div class="page-header mb-4 flex-wrap gap-3">
     <div>
       <h1 class="page-title mb-0">Parc Véhicules</h1>
       <p class="text-muted small mb-0 mt-1">Gérez votre flotte et les tarifs de location</p>
     </div>
-    <a href="/location/public/index.php?url=vehicles/add" class="btn btn-success px-4">
-      <i class="fas fa-plus"></i> Ajouter un véhicule
+    <a href="/location/public/index.php?url=vehicles/add" class="btn btn-success px-4 flex-shrink-0">
+      <i class="fas fa-plus"></i> <span class="d-none d-sm-inline">Ajouter un véhicule</span>
     </a>
   </div>
 
@@ -589,8 +589,8 @@ function getFuelType(array $v): string {
   <div class="filter-bar">
     <form method="GET" action="/location/public/index.php">
       <input type="hidden" name="url" value="vehicles">
-      <div class="row align-items-end">
-        <div class="col-md-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-sm-6 col-lg-3">
           <div class="filter-label">
             <i class="fas fa-car"></i> MARQUE
           </div>
@@ -598,7 +598,7 @@ function getFuelType(array $v): string {
                  placeholder="Ex: Toyota, BMW..."
                  value="<?= htmlspecialchars($keyword ?? '') ?>">
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <div class="filter-label">
             <i class="fas fa-tags"></i> MODÈLE
           </div>
@@ -606,7 +606,7 @@ function getFuelType(array $v): string {
                  placeholder="Ex: Clio, Serie 3..."
                  value="<?= htmlspecialchars($modele ?? '') ?>">
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <div class="filter-label">
             <i class="fas fa-list-check"></i> STATUT
           </div>
@@ -618,11 +618,11 @@ function getFuelType(array $v): string {
             <option value="indisponible" <?= ($statut ?? '') === 'indisponible' ? 'selected' : '' ?>>⛔ Indisponible</option>
           </select>
         </div>
-        <div class="col-md-3 d-flex gap-2">
+        <div class="col-12 col-sm-6 col-lg-3 d-flex gap-2 flex-wrap">
           <button type="submit" class="btn-search flex-fill">
             <i class="fas fa-search"></i> Rechercher
           </button>
-          <a href="/location/public/index.php?url=vehicles" class="btn-reset">
+          <a href="/location/public/index.php?url=vehicles" class="btn-reset flex-fill">
             <i class="fas fa-rotate-right"></i> Réinitialiser
           </a>
         </div>
