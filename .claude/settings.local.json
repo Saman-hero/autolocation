@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/Applications/XAMPP/xamppfiles/bin/mysql -u root transport -e ':*)",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/php -r \"echo password_hash\\('Admin@1234', PASSWORD_DEFAULT\\);\")",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/mysql -u root transport -e \"SELECT id, username, role, created_at FROM users;\")",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/php -r ':*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/mysqldump -u root --no-tablespaces transport)",
+      "Bash(grep -v Warning echo \"Lignes: $\\(wc -l < /Applications/XAMPP/xamppfiles/htdocs/transport/transport.sql\\)\" grep \"CREATE TABLE\" /Applications/XAMPP/xamppfiles/htdocs/transport/transport.sql)",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/mysql:*)",
+      "Bash(git commit:*)",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/mysqldump -u root transport)",
+      "Bash(php -r \"echo class_exists\\('ZipArchive'\\) ? 'ZipArchive OK' : 'No ZipArchive';\")",
+      "Bash(php -r \"echo extension_loaded\\('simplexml'\\) ? 'SimpleXML OK' : 'No SimpleXML';\")",
+      "Bash(/Applications/XAMPP/xamppfiles/bin/php:*)",
+      "Bash(mysql -u root transport -e \"DESCRIBE chauffeurs;\")",
+      "Read(//Applications/XAMPP/xamppfiles/htdocs/**)",
+      "Bash(rsync -av --exclude=.git --exclude=transport.sql '--exclude=*.xlsx' '--exclude=~$*' '--exclude=*.sql' '--exclude=*.png' --exclude=README.md transport/ location/)",
+      "Bash(sed -i '' 's|/transport/login\\\\.php|/location/login.php|g' /Applications/XAMPP/xamppfiles/htdocs/location/logout.php /Applications/XAMPP/xamppfiles/htdocs/location/includes/auth.php /Applications/XAMPP/xamppfiles/htdocs/location/config/database.php)",
+      "Bash(sed -i '' 's|/transport/index\\\\.php|/location/index.php|g' /Applications/XAMPP/xamppfiles/htdocs/location/users/add.php /Applications/XAMPP/xamppfiles/htdocs/location/users/index.php /Applications/XAMPP/xamppfiles/htdocs/location/users/delete.php /Applications/XAMPP/xamppfiles/htdocs/location/users/edit.php)",
+      "Bash(sed -i '' 's|/transport/style\\\\.css|/location/style.css|g' /Applications/XAMPP/xamppfiles/htdocs/location/users/add.php /Applications/XAMPP/xamppfiles/htdocs/location/users/index.php /Applications/XAMPP/xamppfiles/htdocs/location/users/edit.php /Applications/XAMPP/xamppfiles/htdocs/location/maintenance/add.php /Applications/XAMPP/xamppfiles/htdocs/location/maintenance/index.php /Applications/XAMPP/xamppfiles/htdocs/location/maintenance/edit.php /Applications/XAMPP/xamppfiles/htdocs/location/import/vehicles.php)",
+      "Bash(git rm:*)",
+      "Bash(curl:*)",
+      "Bash(sudo /Applications/XAMPP/xamppfiles/bin/apachectl start)",
+      "Bash(sudo /Applications/XAMPP/xamppfiles/bin/mysql.server start)",
+      "Bash(php:*)",
+      "Bash(open:*)",
+      "Bash(wc -l /Applications/XAMPP/xamppfiles/htdocs/location/**/*.php)",
+      "Bash(grep -n \"validate\\\\|is_numeric\\\\|filter_var\\\\|preg_match\" /Applications/XAMPP/xamppfiles/htdocs/location/Controllers/*.php)",
+      "Bash(xargs -I{} /Applications/XAMPP/xamppfiles/bin/php -l {})",
+      "Read(//Applications/XAMPP/xamppfiles/logs/**)"
+    ]
+  }
+}
