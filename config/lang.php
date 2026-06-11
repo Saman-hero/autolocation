@@ -54,7 +54,12 @@ if (!empty($_SESSION['lang'])) {
 // Handle language switch
 if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en', 'ar'])) {
     loadLang($_GET['lang']);
-    $redirect = str_replace(['?lang=fr', '?lang=en', '?lang=ar', '&lang=fr', '&lang=en', '&lang=ar'], '', $_SERVER['REQUEST_URI']);
+    // Remove lang param from URL and redirect
+    $params = $_GET;
+    unset($params['lang']);
+    $query = http_build_query($params);
+    $path = strtok($_SERVER['REQUEST_URI'], '?');
+    $redirect = $path . ($query ? '?' . $query : '');
     header("Location: $redirect");
     exit;
 }

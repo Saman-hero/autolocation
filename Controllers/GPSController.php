@@ -12,7 +12,12 @@ class GPSController {
 
     public function index() {
         $vehicles = $this->conn->query("SELECT id, marque, modele, numero FROM vehicles ORDER BY marque")->fetchAll();
-        $positions = $this->model->getAllLastPositions();
+        $positions = [];
+        try {
+            $positions = $this->model->getAllLastPositions();
+        } catch (Exception $e) {
+            // Table doesn't exist yet
+        }
         require __DIR__ . '/../Views/gps/index.php';
     }
 
@@ -34,7 +39,12 @@ class GPSController {
         $speed = isset($_POST['speed']) ? (float)$_POST['speed'] : null;
         $altitude = isset($_POST['altitude']) ? (float)$_POST['altitude'] : null;
         $heading = isset($_POST['heading']) ? (float)$_POST['heading'] : null;
-        $this->model->savePosition($vehicleId, $lat, $lng, $speed, $altitude, $heading);
-        echo json_encode(['success' => true, 'recorded_at' => date('Y-m-d H:i:s')]);
+        try {
+            $this->model->savePosition($vehicleId, $lat, $lng, $speed, $altitude, $heading);
+            echo json_encode(['success' => true, 'recorded_at' => date('Y-m-d H:i:s')]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'GPS table not set up. Run setup_features.php']);
+        }
     }
 }

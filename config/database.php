@@ -18,7 +18,21 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// ── 2. Flash helper ────────────────────────────────────────────────────────
+// ── 5. Internationalization ──────────────────────────────────────────────
+// Load language support so __() is available everywhere.
+if (file_exists(__DIR__ . '/lang.php')) {
+    require_once __DIR__ . '/lang.php';
+} else {
+    // Fallback: define simple pass-through if lang.php doesn't exist
+    if (!function_exists('__')) {
+        function __(string $key): string { return $key; }
+    }
+    if (!function_exists('getLanguages')) {
+        function getLanguages(): array { return ['fr' => ['label' => 'Français', 'flag' => '🇫🇷', 'dir' => 'ltr']]; }
+    }
+}
+
+// ── 2. Flash helper (original) ──────────────────────────────────────────
 /**
  * Store a one-time notification message in the session.
  * The message is consumed and displayed once by includes/flash.php.
@@ -38,7 +52,7 @@ $_currentScript = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
 $_currentUrl    = trim($_GET['url'] ?? '', '/');
 
 // Routes that do NOT require the user to be logged in.
-$_publicRoutes  = ['login', 'logout', 'forgot-password', 'reset-password', 'public', 'public/book', 'public/calendar', 'public/confirmation', 'gps', 'gps/update'];
+$_publicRoutes  = ['login', 'logout', 'forgot-password', 'reset-password', 'public', 'public/book', 'public/calendar', 'public/confirmation'];
 $_publicPages   = ['login.php', 'logout.php', 'forgot-password.php', 'reset-password.php'];
 
 $_isPublic = in_array($_currentScript, $_publicPages)

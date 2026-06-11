@@ -25,7 +25,6 @@
 // config/database.php starts the session, defines flash(), guards auth,
 // and provides the Database class — must be loaded first.
 require_once __DIR__ . "/../config/database.php";
-require_once __DIR__ . "/../config/lang.php";
 
 // ── Load all Controllers ───────────────────────────────────────────────────
 // Loaded here once so the switch below can instantiate any of them.
