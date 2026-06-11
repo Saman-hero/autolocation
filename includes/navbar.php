@@ -1,5 +1,35 @@
 <?php
+/**
+ * includes/navbar.php
+ *
+ * Renders the main application navigation bar.
+ * Include this file at the top of every page layout (inside <body>).
+ *
+ * Features:
+ *   - navActive()  helper highlights the current page link.
+ *   - Role-based visibility: admin-only links (Users, Audit, Config DB)
+ *     are hidden from Operator accounts.
+ *   - Hamburger toggle menu with vanilla JS (no jQuery dependency):
+ *       • Click the button to open/close the nav panel.
+ *       • Clicking outside the nav panel closes it automatically.
+ *       • Pressing Escape closes it via keyboard.
+ *   - Displays the logged-in user's full name from $_SESSION['user_nom'].
+ *   - Provides a logout link pointing to the logout route.
+ */
+
+// Capture the current URL path once — used by navActive() for all links.
 $uri = $_SERVER['REQUEST_URI'];
+
+/**
+ * Return the CSS class that marks a nav item as active (current page).
+ *
+ * Checks whether $path appears anywhere in the current REQUEST_URI.
+ * Example: navActive('/reservations') returns 'pnav-active' when the
+ * user is on /location/reservations/index.php.
+ *
+ * @param string $path  URL fragment to look for.
+ * @return string       'pnav-active' if matched, empty string otherwise.
+ */
 function navActive(string $path): string {
     global $uri;
     return strpos($uri, $path) !== false ? 'pnav-active' : '';
@@ -15,24 +45,23 @@ function navActive(string $path): string {
       </button>
 
       <div class="pnav-panel" id="pnavPanel">
-        <a href="/location/index.php"               class="pnav-item <?= navActive('/location/index') ?>"       style="--i:0"><span class="pnav-item-icon">🏠</span> Accueil</a>
-        <a href="/location/reservations/index.php"  class="pnav-item <?= navActive('/reservations') ?>"         style="--i:1"><span class="pnav-item-icon">📋</span> Locations</a>
-        <a href="/location/clients/index.php"       class="pnav-item <?= navActive('/clients') ?>"              style="--i:2"><span class="pnav-item-icon">👤</span> Clients</a>
-        <a href="/location/vehicles/index.php"      class="pnav-item <?= navActive('/vehicles') ?>"             style="--i:3"><span class="pnav-item-icon">🚗</span> Véhicules</a>
-        <a href="/location/paiements/index.php"     class="pnav-item <?= navActive('/paiements') ?>"            style="--i:4"><span class="pnav-item-icon">💳</span> Paiements</a>
-        <a href="/location/maintenance/index.php"   class="pnav-item <?= navActive('/maintenance') ?>"          style="--i:5"><span class="pnav-item-icon">🔧</span> Maintenance</a>
-        <a href="/location/sinistres/index.php"     class="pnav-item <?= navActive('/sinistres') ?>"            style="--i:6"><span class="pnav-item-icon">⚠️</span> Sinistres</a>
-        <a href="/location/historique/index.php"    class="pnav-item <?= navActive('/historique') ?>"           style="--i:7"><span class="pnav-item-icon">🕑</span> Historique</a>
-        <a href="/location/reservations/calendar.php"  class="pnav-item <?= navActive('/calendar') ?>"             style="--i:8"><span class="pnav-item-icon">📅</span> Calendrier</a>
+        <a href="/location/public/index.php?url=dashboard"    class="pnav-item <?= navActive('url=dashboard') ?>"    style="--i:0"><span class="pnav-item-icon">🏠</span> Accueil</a>
+        <a href="/location/public/index.php?url=reservations" class="pnav-item <?= navActive('url=reservations') ?>" style="--i:1"><span class="pnav-item-icon">📋</span> Locations</a>
+        <a href="/location/public/index.php?url=clients"      class="pnav-item <?= navActive('url=clients') ?>"      style="--i:2"><span class="pnav-item-icon">👤</span> Clients</a>
+        <a href="/location/public/index.php?url=vehicles"     class="pnav-item <?= navActive('url=vehicles') ?>"     style="--i:3"><span class="pnav-item-icon">🚗</span> Véhicules</a>
+        <a href="/location/public/index.php?url=paiements"    class="pnav-item <?= navActive('url=paiements') ?>"    style="--i:4"><span class="pnav-item-icon">💳</span> Paiements</a>
+        <a href="/location/public/index.php?url=maintenance"  class="pnav-item <?= navActive('url=maintenance') ?>"  style="--i:5"><span class="pnav-item-icon">🔧</span> Maintenance</a>
+        <a href="/location/public/index.php?url=sinistres"    class="pnav-item <?= navActive('url=sinistres') ?>"    style="--i:6"><span class="pnav-item-icon">⚠️</span> Sinistres</a>
+        <a href="/location/public/index.php?url=historique"   class="pnav-item <?= navActive('url=historique') ?>"   style="--i:7"><span class="pnav-item-icon">🕑</span> Historique</a>
+        <a href="/location/public/index.php?url=etat-vehicule" class="pnav-item <?= navActive('url=etat-vehicule') ?>" style="--i:8"><span class="pnav-item-icon">📅</span> État véhicules</a>
         <?php if (!empty($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <a href="/location/users/index.php"         class="pnav-item <?= navActive('/users') ?>"                style="--i:9"><span class="pnav-item-icon">⚙️</span> Utilisateurs</a>
-        <a href="/location/admin/audit.php"         class="pnav-item <?= navActive('/admin/audit') ?>"          style="--i:10"><span class="pnav-item-icon">🔍</span> Journal d'audit</a>
-        <a href="/location/admin/setup-db.php"      class="pnav-item <?= navActive('/admin/setup') ?>"          style="--i:11"><span class="pnav-item-icon">🗄️</span> Config DB</a>
+        <a href="/location/public/index.php?url=users"        class="pnav-item <?= navActive('url=users') ?>"        style="--i:9"><span class="pnav-item-icon">⚙️</span> Utilisateurs</a>
+        <a href="/location/public/index.php?url=admin/audit"  class="pnav-item <?= navActive('url=admin/audit') ?>"  style="--i:10"><span class="pnav-item-icon">🔍</span> Journal d'audit</a>
         <?php endif; ?>
       </div>
     </div>
 
-    <a class="navbar-brand" href="/location/index.php">
+    <a class="navbar-brand" href="/location/public/index.php?url=dashboard">
       <div class="brand-name">
         <span class="brand-title">AutoLocation</span>
         <span class="brand-sub">Gestion de flotte</span>
@@ -43,7 +72,7 @@ function navActive(string $path): string {
       <?php if (!empty($_SESSION['user_nom'])): ?>
         <span class="nav-user">👤 <?= htmlspecialchars($_SESSION['user_nom']) ?></span>
       <?php endif; ?>
-      <a href="/location/logout.php" class="nav-logout-btn">Déconnexion</a>
+      <a href="/location/public/index.php?url=logout" class="nav-logout-btn">Déconnexion</a>
     </div>
 
   </div>

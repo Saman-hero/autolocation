@@ -1,12 +1,35 @@
 <?php
 /**
- * Mailer functions using PHP mail()
- * All functions return bool (success/failure)
+ * includes/mailer.php
+ *
+ * Transactional email helpers for AutoLocation.
+ * All email is sent via PHP's built-in mail() function.
+ *
+ * Three outbound email types are supported:
+ *   1. sendReservationConfirmation() — sent when a new reservation is created.
+ *   2. sendReturnReminder()          — sent the day before the vehicle is due back (cron).
+ *   3. sendLateAlert()               — sent when a reservation is closed overdue.
+ *
+ * All functions:
+ *   - Guard against empty email addresses (return false without throwing).
+ *   - Use UTF-8 encoded subjects to handle French characters safely.
+ *   - Build a consistent HTML layout via private helpers (_mailHeaders, _mailTemplate).
+ *   - Return bool: true = mail() accepted the message, false = skipped or failed.
+ *
+ * Note: mail() acceptance does NOT guarantee delivery. In production, replace
+ * mail() with a transactional service (Mailgun, SendGrid …) for reliability.
  */
 
+// Sender identity — used in the From header of every outgoing email.
 define('MAIL_FROM',    'noreply@autolocation.ma');
 define('MAIL_FROM_NAME', 'AutoLocation');
 
+/**
+ * Build the standard set of MIME headers for every outgoing email.
+ * Declares HTML content type and sets the From address.
+ *
+ * @return string  Newline-delimited header string accepted by mail().
+ */
 function _mailHeaders(): string {
     return implode("\r\n", [
         'MIME-Version: 1.0',
@@ -16,6 +39,15 @@ function _mailHeaders(): string {
     ]);
 }
 
+/**
+ * Wrap an HTML body fragment in the AutoLocation branded email shell.
+ * Produces a self-contained HTML document with inline CSS so email
+ * clients (which ignore external stylesheets) render correctly.
+ *
+ * @param string $title  Plain-text <title> for the email document.
+ * @param string $body   Inner HTML to place inside the content area.
+ * @return string        Full HTML email document ready to send.
+ */
 function _mailTemplate(string $title, string $body): string {
     return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' . htmlspecialchars($title) . '</title>
 <style>
@@ -38,7 +70,16 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;margin:0;padding:20px}
 }
 
 /**
- * Envoie une confirmation de réservation au client
+ * Send a booking confirmation email to the client.
+ *
+ * Triggered automatically right after a new reservation is saved in
+ * ReservationController::add(). The email lists all key details:
+ * reference, vehicle, dates, duration, and total amount.
+ *
+ * @param array $client      Client row from the `clients` table.
+ * @param array $reservation Reservation row from the `reservations` table.
+ * @param array $vehicle     Vehicle row from the `vehicles` table.
+ * @return bool              True if mail() accepted the message.
  */
 function sendReservationConfirmation(array $client, array $reservation, array $vehicle): bool {
     if (empty($client['email'])) return false;
@@ -65,7 +106,15 @@ function sendReservationConfirmation(array $client, array $reservation, array $v
 }
 
 /**
- * Envoie un rappel de retour au client (J-1)
+ * Send a return reminder email to the client one day before due date.
+ *
+ * Called by the cron script cron/send-reminders.php which runs daily and
+ * queries reservations whose return date is tomorrow (J-1).
+ *
+ * @param array $client      Client row from the `clients` table.
+ * @param array $reservation Reservation row from the `reservations` table.
+ * @param array $vehicle     Vehicle row from the `vehicles` table.
+ * @return bool              True if mail() accepted the message.
  */
 function sendReturnReminder(array $client, array $reservation, array $vehicle): bool {
     if (empty($client['email'])) return false;
@@ -89,7 +138,15 @@ function sendReturnReminder(array $client, array $reservation, array $vehicle): 
 }
 
 /**
- * Envoie une alerte de retard au client
+ * Send a late return alert email to the client.
+ *
+ * Called by ReservationController::finish() when the actual return date
+ * is past the originally planned return date. The email shows the number
+ * of overdue days and the estimated late fees (days × daily rate).
+ *
+ * @param array $client      Client row from the `clients` table.
+ * @param array $reservation Reservation row from the `reservations` table.
+ * @return bool              True if mail() accepted the message.
  */
 function sendLateAlert(array $client, array $reservation): bool {
     if (empty($client['email'])) return false;
