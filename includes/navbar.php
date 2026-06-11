@@ -56,22 +56,23 @@ function navActive(string $path): string {
     <div class="pnav-wrap" id="pnavWrap">
       <button class="pnav-btn" id="pnavBtn">
         <span class="pnav-icon" id="pnavIcon">☰</span>
-        <span class="pnav-label">Menu</span>
+        <span class="pnav-label"><?= __('menu') ?></span>
       </button>
 
       <div class="pnav-panel" id="pnavPanel">
-        <a href="/location/public/index.php?url=dashboard"    class="pnav-item <?= navActive('url=dashboard') ?>"    style="--i:0"><span class="pnav-item-icon">🏠</span> Accueil</a>
-        <a href="/location/public/index.php?url=reservations" class="pnav-item <?= navActive('url=reservations') ?>" style="--i:1"><span class="pnav-item-icon">📋</span> Locations</a>
-        <a href="/location/public/index.php?url=clients"      class="pnav-item <?= navActive('url=clients') ?>"      style="--i:2"><span class="pnav-item-icon">👤</span> Clients</a>
-        <a href="/location/public/index.php?url=vehicles"     class="pnav-item <?= navActive('url=vehicles') ?>"     style="--i:3"><span class="pnav-item-icon">🚗</span> Véhicules</a>
-        <a href="/location/public/index.php?url=paiements"    class="pnav-item <?= navActive('url=paiements') ?>"    style="--i:4"><span class="pnav-item-icon">💳</span> Paiements</a>
-        <a href="/location/public/index.php?url=maintenance"  class="pnav-item <?= navActive('url=maintenance') ?>"  style="--i:5"><span class="pnav-item-icon">🔧</span> Maintenance</a>
-        <a href="/location/public/index.php?url=sinistres"    class="pnav-item <?= navActive('url=sinistres') ?>"    style="--i:6"><span class="pnav-item-icon">⚠️</span> Sinistres</a>
-        <a href="/location/public/index.php?url=historique"   class="pnav-item <?= navActive('url=historique') ?>"   style="--i:7"><span class="pnav-item-icon">🕑</span> Historique</a>
-        <a href="/location/public/index.php?url=etat-vehicule" class="pnav-item <?= navActive('url=etat-vehicule') ?>" style="--i:8"><span class="pnav-item-icon">📅</span> État véhicules</a>
+        <a href="/location/public/index.php?url=dashboard"    class="pnav-item <?= navActive('url=dashboard') ?>"    style="--i:0"><span class="pnav-item-icon">🏠</span> <?= __('accueil') ?></a>
+        <a href="/location/public/index.php?url=reservations" class="pnav-item <?= navActive('url=reservations') ?>" style="--i:1"><span class="pnav-item-icon">📋</span> <?= __('locations') ?></a>
+        <a href="/location/public/index.php?url=clients"      class="pnav-item <?= navActive('url=clients') ?>"      style="--i:2"><span class="pnav-item-icon">👤</span> <?= __('clients') ?></a>
+        <a href="/location/public/index.php?url=vehicles"     class="pnav-item <?= navActive('url=vehicles') ?>"     style="--i:3"><span class="pnav-item-icon">🚗</span> <?= __('vehicules') ?></a>
+        <a href="/location/public/index.php?url=paiements"    class="pnav-item <?= navActive('url=paiements') ?>"    style="--i:4"><span class="pnav-item-icon">💳</span> <?= __('paiements') ?></a>
+        <a href="/location/public/index.php?url=maintenance"  class="pnav-item <?= navActive('url=maintenance') ?>"  style="--i:5"><span class="pnav-item-icon">🔧</span> <?= __('maintenance') ?></a>
+        <a href="/location/public/index.php?url=sinistres"    class="pnav-item <?= navActive('url=sinistres') ?>"    style="--i:6"><span class="pnav-item-icon">⚠️</span> <?= __('sinistres') ?></a>
+        <a href="/location/public/index.php?url=historique"   class="pnav-item <?= navActive('url=historique') ?>"   style="--i:7"><span class="pnav-item-icon">🕑</span> <?= __('historique') ?></a>
+        <a href="/location/public/index.php?url=etat-vehicule" class="pnav-item <?= navActive('url=etat-vehicule') ?>" style="--i:8"><span class="pnav-item-icon">📅</span> <?= __('etat_vehicules') ?></a>
+        <a href="/location/public/index.php?url=gps"          class="pnav-item <?= navActive('url=gps') ?>"          style="--i:9"><span class="pnav-item-icon">📍</span> <?= __('geolocalisation') ?></a>
         <?php if (!empty($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <a href="/location/public/index.php?url=users"        class="pnav-item <?= navActive('url=users') ?>"        style="--i:9"><span class="pnav-item-icon">⚙️</span> Utilisateurs</a>
-        <a href="/location/public/index.php?url=admin/audit"  class="pnav-item <?= navActive('url=admin/audit') ?>"  style="--i:10"><span class="pnav-item-icon">🔍</span> Journal d'audit</a>
+        <a href="/location/public/index.php?url=users"        class="pnav-item <?= navActive('url=users') ?>"        style="--i:10"><span class="pnav-item-icon">⚙️</span> <?= __('utilisateurs') ?></a>
+        <a href="/location/public/index.php?url=admin/audit"  class="pnav-item <?= navActive('url=admin/audit') ?>"  style="--i:11"><span class="pnav-item-icon">🔍</span> <?= __('journal_audit') ?></a>
         <?php endif; ?>
       </div>
     </div>
@@ -92,7 +93,7 @@ function navActive(string $path): string {
       <?php endif; ?>
       <a href="/location/public/index.php?url=logout" class="nav-logout-btn">
         <span class="logout-icon">🚪</span>
-        <span class="logout-text">Déconnexion</span>
+        <span class="logout-text"><?= __('deconnexion') ?></span>
       </a>
     </div>
 

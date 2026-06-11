@@ -25,6 +25,7 @@
 // config/database.php starts the session, defines flash(), guards auth,
 // and provides the Database class — must be loaded first.
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../config/lang.php";
 
 // ── Load all Controllers ───────────────────────────────────────────────────
 // Loaded here once so the switch below can instantiate any of them.
@@ -40,6 +41,8 @@ require_once __DIR__ . "/../Controllers/HistoriqueController.php";
 require_once __DIR__ . "/../Controllers/UserController.php";
 require_once __DIR__ . "/../Controllers/EtatVehiculeController.php";
 require_once __DIR__ . "/../Controllers/AdminController.php";
+require_once __DIR__ . "/../Controllers/PublicController.php";
+require_once __DIR__ . "/../Controllers/GPSController.php";
 
 // ── Resolve the requested route ────────────────────────────────────────────
 // Read ?url= from the query string; default to 'dashboard' if absent.
@@ -127,6 +130,16 @@ switch ($url) {
     // ── Admin ──────────────────────────────────────────────────────────────
     // Admin-only: audit log viewer with filters and pagination.
     case 'admin/audit':    (new AdminController())->audit(); break;
+
+    // ── Public booking ─────────────────────────────────────────────────────
+    case 'public':           (new PublicController())->index();        break;
+    case 'public/book':      (new PublicController())->book();         break;
+    case 'public/calendar':  (new PublicController())->calendar();     break;
+    case 'public/confirmation': (new PublicController())->confirmation(); break;
+
+    // ── GPS ────────────────────────────────────────────────────────────────
+    case 'gps':              (new GPSController())->index();           break;
+    case 'gps/update':       (new GPSController())->update();          break;
 
     // ── 404 Fallback ───────────────────────────────────────────────────────
     // Any unrecognised route returns a plain 404 response.

@@ -38,7 +38,7 @@ $_currentScript = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
 $_currentUrl    = trim($_GET['url'] ?? '', '/');
 
 // Routes that do NOT require the user to be logged in.
-$_publicRoutes  = ['login', 'logout', 'forgot-password', 'reset-password'];
+$_publicRoutes  = ['login', 'logout', 'forgot-password', 'reset-password', 'public', 'public/book', 'public/calendar', 'public/confirmation', 'gps', 'gps/update'];
 $_publicPages   = ['login.php', 'logout.php', 'forgot-password.php', 'reset-password.php'];
 
 $_isPublic = in_array($_currentScript, $_publicPages)
