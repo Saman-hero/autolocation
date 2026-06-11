@@ -36,12 +36,27 @@ function navActive(string $path): string {
 }
 ?>
 <nav id="mainNav">
+  <style>
+    @media (max-width: 768px) {
+      .pnav-label { display: none; }
+      .nav-user-name { display: none; }
+      .logout-text { display: none; }
+      .logout-icon, .nav-user-icon { font-size: 1.2rem; }
+      .nav-logout-btn { border: none; padding: .38rem .55rem; background: rgba(252,165,165,.15); border-radius: 50%; }
+      .nav-logout-btn:hover { background: rgba(192,39,45,.35); }
+      .nav-user { font-size: 0; }
+      .nav-inner { padding: 0 1rem; }
+    }
+    @media (min-width: 769px) {
+      .logout-icon, .nav-user-icon { display: none; }
+    }
+  </style>
   <div class="nav-inner">
 
     <div class="pnav-wrap" id="pnavWrap">
       <button class="pnav-btn" id="pnavBtn">
         <span class="pnav-icon" id="pnavIcon">☰</span>
-        Menu
+        <span class="pnav-label">Menu</span>
       </button>
 
       <div class="pnav-panel" id="pnavPanel">
@@ -70,9 +85,15 @@ function navActive(string $path): string {
 
     <div class="nav-right">
       <?php if (!empty($_SESSION['user_nom'])): ?>
-        <span class="nav-user">👤 <?= htmlspecialchars($_SESSION['user_nom']) ?></span>
+        <span class="nav-user">
+          <span class="nav-user-icon">👤</span>
+          <span class="nav-user-name"><?= htmlspecialchars($_SESSION['user_nom']) ?></span>
+        </span>
       <?php endif; ?>
-      <a href="/location/public/index.php?url=logout" class="nav-logout-btn">Déconnexion</a>
+      <a href="/location/public/index.php?url=logout" class="nav-logout-btn">
+        <span class="logout-icon">🚪</span>
+        <span class="logout-text">Déconnexion</span>
+      </a>
     </div>
 
   </div>
