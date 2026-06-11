@@ -41,11 +41,12 @@ class VehicleController {
      */
     public function index() {
         $keyword   = trim($_GET['q'] ?? '');
+        $modele    = trim($_GET['modele'] ?? '');
         $categorie = $_GET['categorie'] ?? '';
         $statut    = $_GET['statut'] ?? '';
 
         // Pass null instead of empty string so the model skips the WHERE clause.
-        $vehicles   = $this->model->search($keyword ?: null, $categorie ?: null, $statut ?: null);
+        $vehicles   = $this->model->search($keyword ?: null, $categorie ?: null, $statut ?: null, $modele ?: null);
         $categories = ['économique','berline','SUV','premium','utilitaire']; // Dropdown options
         require __DIR__ . "/../Views/vehicles/index.php";
     }
@@ -61,6 +62,12 @@ class VehicleController {
      */
     public function add() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Handle image upload
+            $imageName = null;
+            if (!empty($_FILES['image']['name'])) {
+                $imageName = $this->uploadImage($_FILES['image']);
+            }
+
             $this->model->create([
                 ':numero'               => trim($_POST['numero']),
                 ':immatriculation'      => trim($_POST['immatriculation']) ?: null,
@@ -68,15 +75,15 @@ class VehicleController {
                 ':modele'               => trim($_POST['modele']),
                 ':annee'                => (int)$_POST['annee'],
                 ':couleur'              => trim($_POST['couleur']) ?: null,
-                ':nb_places'            => (int)($_POST['nb_places'] ?: 5),    // Default 5 seats
+                ':image'                => $imageName,
+                ':nb_places'            => (int)($_POST['nb_places'] ?: 5),
                 ':categorie'            => $_POST['categorie'],
                 ':kilometrage'          => (int)($_POST['kilometrage'] ?: 0),
                 ':statut'               => $_POST['statut'],
                 ':prix_jour'            => (float)($_POST['prix_jour'] ?: 0),
                 ':caution'              => (float)($_POST['caution'] ?: 0),
                 ':type_vidange'         => $_POST['type_vidange'] ?: null,
-                ':intervalle_vidange'   => (int)($_POST['intervalle_vidange'] ?: 10000), // Default 10 000 km
-                // Store NULL if the field was left blank (vehicle may not have a recorded oil change yet).
+                ':intervalle_vidange'   => (int)($_POST['intervalle_vidange'] ?: 10000),
                 ':derniere_vidange_km'  => $_POST['derniere_vidange_km'] !== '' ? (int)$_POST['derniere_vidange_km'] : null,
                 ':date_derniere_vidange'=> $_POST['date_derniere_vidange'] ?: null,
             ]);
@@ -86,6 +93,53 @@ class VehicleController {
         }
 
         require __DIR__ . "/../Views/vehicles/add.php";
+    }
+
+    /**
+     * Upload vehicle image and return the filename.
+     *
+     * @param array $file $_FILES['image'] data
+     * @return string|null Filename stored in DB or null on failure
+     */
+    private function uploadImage(array $file): ?string {
+        // Check for upload errors
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        // Validate file size (max 5MB)
+        $maxSize = 5 * 1024 * 1024;
+        if ($file['size'] > $maxSize) {
+            flash('danger', 'L\'image est trop volumineuse (max 5MB).');
+            return null;
+        }
+
+        // Validate file type
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mimeType, $allowedTypes)) {
+            flash('danger', 'Type de fichier non autorisé. Utilisez JPG, PNG ou GIF.');
+            return null;
+        }
+
+        // Generate unique filename
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'vehicle_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . strtolower($extension);
+
+        // Move file to uploads directory
+        $uploadDir = __DIR__ . '/../uploads/vehicles/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+            return $filename;
+        }
+
+        return null;
     }
 
     /**
@@ -107,6 +161,29 @@ class VehicleController {
         if (!$v) { header("Location: /location/public/index.php?url=vehicles"); exit; }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Handle image upload
+            $imageName = $v['image'] ?? null; // Keep existing image by default
+            if (!empty($_FILES['image']['name'])) {
+                // Delete old image if exists
+                if (!empty($v['image'])) {
+                    $oldImagePath = __DIR__ . '/../uploads/vehicles/' . $v['image'];
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                $imageName = $this->uploadImage($_FILES['image']);
+            }
+            // Handle image deletion
+            if (isset($_POST['delete_image']) && $_POST['delete_image'] === '1') {
+                if (!empty($v['image'])) {
+                    $oldImagePath = __DIR__ . '/../uploads/vehicles/' . $v['image'];
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                $imageName = null;
+            }
+
             $this->model->update([
                 ':id'                   => $id,
                 ':numero'               => trim($_POST['numero']),
@@ -115,6 +192,7 @@ class VehicleController {
                 ':modele'               => trim($_POST['modele']),
                 ':annee'                => (int)$_POST['annee'],
                 ':couleur'              => trim($_POST['couleur']) ?: null,
+                ':image'                => $imageName,
                 ':nb_places'            => (int)($_POST['nb_places'] ?: 5),
                 ':categorie'            => $_POST['categorie'],
                 ':kilometrage'          => (int)($_POST['kilometrage'] ?: 0),

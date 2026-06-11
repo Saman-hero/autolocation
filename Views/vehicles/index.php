@@ -6,6 +6,7 @@
   <title>Parc Véhicules — AutoLocation</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="/location/style.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     /* ── Page ─────────────────────────────────────────────── */
     body { background: #f4f6f9; }
@@ -15,262 +16,424 @@
       background: #fff;
       border-radius: 14px;
       box-shadow: 0 2px 12px rgba(0,0,0,.07);
-      padding: 18px 22px;
+      padding: 20px 24px;
       margin-bottom: 24px;
     }
 
-    /* ── Vehicle card ─────────────────────────────────────── */
-    .vcard {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 16px rgba(0,0,0,.07);
-      margin-bottom: 20px;
-      display: flex;
-      overflow: hidden;
-      transition: box-shadow .2s, transform .2s;
-      border: 1px solid #eef0f4;
-      min-height: 190px;
-    }
-    .vcard:hover {
-      box-shadow: 0 8px 32px rgba(27,94,53,.13);
-      transform: translateY(-2px);
-    }
-
-    /* ── Image panel ──────────────────────────────────────── */
-    .vcard-img {
-      width: 230px;
-      min-width: 230px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #f0f4f0 0%, #e8f0e9 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .vcard-img::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #1b5e35, #2e7d52);
-    }
-    .vcard-img img {
-      width: 200px;
-      height: 130px;
-      object-fit: contain;
-      filter: drop-shadow(0 6px 16px rgba(0,0,0,.18));
-    }
-    .vcard-img .car-placeholder {
-      font-size: 90px;
-      line-height: 1;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,.15));
-      user-select: none;
-    }
-    .vcard-img .statut-ribbon {
-      position: absolute;
-      top: 12px; left: -28px;
-      background: #1b5e35;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      padding: 4px 36px;
-      transform: rotate(-45deg);
-    }
-    .statut-ribbon.loue    { background: #d97706; }
-    .statut-ribbon.maint   { background: #b91c1c; }
-    .statut-ribbon.indispo { background: #6b7280; }
-
-    /* ── Info panel ───────────────────────────────────────── */
-    .vcard-info {
-      flex: 1;
-      padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .vcard-category {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #5a7a66;
-      background: #e8f4ed;
-      border: 1px solid #c3dccb;
-      border-radius: 20px;
-      padding: 3px 10px;
-      margin-bottom: 6px;
-      width: fit-content;
-    }
-    .vcard-name {
-      font-size: 22px;
-      font-weight: 800;
-      color: #1a2e22;
-      letter-spacing: .01em;
-      line-height: 1.15;
-      margin-bottom: 2px;
-    }
-    .vcard-sub {
-      font-size: 12px;
-      color: #8a9ba8;
-      margin-bottom: 14px;
-    }
-
-    /* ── Specs chips ─────────────────────────────────────── */
-    .vcard-specs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .spec-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: #f5f7fa;
-      border: 1px solid #e4e8ed;
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #3d5a47;
-    }
-    .spec-chip .spec-icon { font-size: 14px; }
-
-    /* ── Includes ─────────────────────────────────────────── */
-    .vcard-includes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .incl-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #374151;
-    }
-    .incl-check {
-      width: 18px; height: 18px;
-      background: #1b5e35;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .incl-check svg { width: 10px; height: 10px; stroke: #fff; fill: none; }
-
-    /* ── Actions strip ───────────────────────────────────── */
-    .vcard-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid #f0f2f5;
-      align-items: center;
-    }
-    .btn-details {
-      background: none; border: none;
-      font-size: 12px; color: #1b5e35;
-      font-weight: 600; padding: 0;
-      text-decoration: none;
-      display: flex; align-items: center; gap: 4px;
-    }
-    .btn-details:hover { color: #134a27; text-decoration: underline; }
-
-    /* ── Price panel ──────────────────────────────────────── */
-    .vcard-price {
-      width: 190px;
-      min-width: 190px;
-      background: #fafbfc;
-      border-left: 1px solid #f0f2f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 18px;
-      text-align: center;
-      gap: 8px;
-    }
-    .price-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #9ca3af;
-    }
-    .price-amount {
-      font-size: 26px;
-      font-weight: 900;
-      color: #1a2e22;
-      line-height: 1.1;
-    }
-    .price-amount span { font-size: 14px; font-weight: 600; color: #6b7280; }
-    .price-total {
+    .filter-label {
       font-size: 11px;
-      color: #9ca3af;
-    }
-    .price-caution {
-      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
       color: #6b7280;
-      background: #f3f4f6;
-      border-radius: 6px;
-      padding: 3px 8px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .btn-select {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
+
+    .filter-input {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fafafa;
+    }
+
+    .filter-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+      background: #fff;
+    }
+
+    .filter-input::placeholder {
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .filter-select {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fafafa;
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+      background: #fff;
+    }
+
+    .btn-search {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
       color: #fff;
       border: none;
       border-radius: 10px;
-      padding: 10px 22px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .03em;
-      text-transform: uppercase;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform .15s, box-shadow .15s;
+      cursor: pointer;
+    }
+
+    .btn-search:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59,130,246,.3);
+      color: #fff;
+    }
+
+    .btn-reset {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .2s;
       cursor: pointer;
       text-decoration: none;
-      display: inline-block;
-      transition: opacity .15s, transform .15s;
-      box-shadow: 0 4px 12px rgba(217,119,6,.3);
+    }
+
+    .btn-reset:hover {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    /* ── Result header ───────────────────────────────────── */
+    .result-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .result-count {
+      font-size: 14px;
+      color: #374151;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .result-count i {
+      color: #3b82f6;
+    }
+
+    /* ── Vehicle card ─────────────────────────────────────── */
+    .vehicle-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      border: 1px solid #eef0f4;
+      transition: transform .25s, box-shadow .25s;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .vehicle-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.12);
+    }
+
+    /* ── Image container ─────────────────────────────────── */
+    .vehicle-img-wrapper {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .vehicle-img-wrapper img {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease;
+    }
+
+    .vehicle-card:hover .vehicle-img-wrapper img {
+      transform: scale(1.05);
+    }
+
+    .vehicle-placeholder {
+      font-size: 80px;
+      opacity: .4;
+    }
+
+    /* ── Status badge ────────────────────────────────────── */
+    .status-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(8px);
+    }
+
+    .status-disponible {
+      background: rgba(16, 185, 129, .9);
+      color: #fff;
+    }
+
+    .status-loue {
+      background: rgba(245, 158, 11, .9);
+      color: #fff;
+    }
+
+    .status-maintenance {
+      background: rgba(239, 68, 68, .9);
+      color: #fff;
+    }
+
+    .status-indisponible {
+      background: rgba(107, 114, 128, .9);
+      color: #fff;
+    }
+
+    /* ── Card body ───────────────────────────────────────── */
+    .vehicle-card-body {
+      padding: 16px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .vehicle-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .vehicle-meta {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .vehicle-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Feature chips ───────────────────────────────────── */
+    .vehicle-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .feature-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .feature-chip i {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* ── Price section ───────────────────────────────────── */
+    .vehicle-price {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid #f3f4f6;
       text-align: center;
     }
-    .btn-select:hover { opacity: .9; transform: translateY(-1px); color: #fff; }
-    .btn-edit-sm {
-      font-size: 11px; padding: 4px 10px;
-      border-radius: 6px;
+
+    .price-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1;
+    }
+
+    .price-currency {
+      font-size: 16px;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .price-period {
+      font-size: 13px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    /* ── Action buttons ──────────────────────────────────── */
+    .vehicle-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn-view {
+      flex: 1;
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background .2s, border-color .2s;
+      text-decoration: none;
+    }
+
+    .btn-view:hover {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+      color: #374151;
+    }
+
+    .btn-rent {
+      flex: 1;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform .15s, box-shadow .15s;
+      text-decoration: none;
+    }
+
+    .btn-rent:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16,185,129,.3);
+      color: #fff;
+    }
+
+    .btn-rent.disabled {
+      background: linear-gradient(135deg, #9ca3af, #6b7280);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-rent.disabled:hover {
+      transform: none;
+      box-shadow: none;
     }
 
     /* ── Empty state ─────────────────────────────────────── */
     .empty-premium {
       text-align: center;
       padding: 80px 20px;
+      background: #fff;
+      border-radius: 16px;
+      border: 2px dashed #e5e7eb;
     }
-    .empty-premium .empty-car { font-size: 80px; margin-bottom: 16px; opacity: .3; }
-    .empty-premium h3 { color: #6b7280; font-weight: 700; }
 
-    /* ── Count badge ─────────────────────────────────────── */
-    .result-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .empty-premium .empty-car {
+      font-size: 80px;
       margin-bottom: 16px;
-    }
-    .result-count {
-      font-size: 13px;
-      color: #6b7280;
-      font-weight: 600;
+      opacity: .3;
     }
 
-    /* ── Responsive ─────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .vcard { flex-direction: column; }
-      .vcard-img { width: 100%; min-width: unset; height: 150px; }
-      .vcard-price { width: 100%; min-width: unset; border-left: none; border-top: 1px solid #f0f2f5; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+    .empty-premium h3 {
+      color: #6b7280;
+      font-weight: 700;
     }
+
+    /* ── Grid layout ─────────────────────────────────────── */
+    .vehicles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 1200px) {
+      .vehicles-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 992px) {
+      .vehicles-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 576px) {
+      .vehicles-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Animations ──────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .vehicle-card {
+      animation: fadeInUp .4s ease both;
+    }
+
+    .vehicle-card:nth-child(1) { animation-delay: .05s; }
+    .vehicle-card:nth-child(2) { animation-delay: .1s; }
+    .vehicle-card:nth-child(3) { animation-delay: .15s; }
+    .vehicle-card:nth-child(4) { animation-delay: .2s; }
+    .vehicle-card:nth-child(5) { animation-delay: .25s; }
+    .vehicle-card:nth-child(6) { animation-delay: .3s; }
+    .vehicle-card:nth-child(7) { animation-delay: .35s; }
+    .vehicle-card:nth-child(8) { animation-delay: .4s; }
   </style>
 </head>
 <body>
@@ -292,29 +455,48 @@ function carEmoji(string $cat): string {
     return '🚗';
 }
 
-/** CSS class for status ribbon. */
-function ribbonClass(string $s): string {
+/** CSS class for status badge. */
+function statusBadgeClass(string $s): string {
     return match($s) {
-        'loué'         => 'loue',
-        'maintenance'  => 'maint',
-        'indisponible' => 'indispo',
-        default        => '',
+        'disponible'   => 'status-disponible',
+        'loué'         => 'status-loue',
+        'maintenance'  => 'status-maintenance',
+        'indisponible' => 'status-indisponible',
+        default        => 'status-disponible',
     };
 }
 
-/** Label for status ribbon. */
-function ribbonLabel(string $s): string {
+/** Label for status badge. */
+function statusLabel(string $s): string {
     return match($s) {
-        'disponible'   => 'Disponible',
-        'loué'         => 'Loué',
-        'maintenance'  => 'En maintenance',
-        'indisponible' => 'Indisponible',
+        'disponible'   => '✓ DISPONIBLE',
+        'loué'         => '🔑 LOUÉ',
+        'maintenance'  => '🔧 MAINTENANCE',
+        'indisponible' => '⛔ INDISPONIBLE',
         default        => ucfirst($s),
     };
 }
+
+/**
+ * Get transmission type.
+ * TODO: Add 'transmission' column to vehicles table in database.
+ * For now returns a default value.
+ */
+function getTransmission(array $v): string {
+    return $v['transmission'] ?? 'Manuelle';
+}
+
+/**
+ * Get fuel type.
+ * TODO: Add 'carburant' column to vehicles table in database.
+ * For now returns a default value.
+ */
+function getFuelType(array $v): string {
+    return $v['carburant'] ?? 'Essence';
+}
 ?>
 
-<div class="container-fluid px-4 py-4" style="max-width:1100px">
+<div class="container-fluid px-4 py-4" style="max-width:1300px">
 
   <!-- Header -->
   <div class="page-header mb-4">
@@ -323,167 +505,149 @@ function ribbonLabel(string $s): string {
       <p class="text-muted small mb-0 mt-1">Gérez votre flotte et les tarifs de location</p>
     </div>
     <a href="/location/public/index.php?url=vehicles/add" class="btn btn-success px-4">
-      + Ajouter un véhicule
+      <i class="fas fa-plus"></i> Ajouter un véhicule
     </a>
   </div>
 
   <!-- Filters -->
   <div class="filter-bar">
-    <form method="GET" action="/location/public/index.php" class="row g-2 align-items-end">
+    <form method="GET" action="/location/public/index.php">
       <input type="hidden" name="url" value="vehicles">
-      <div class="col-md-4">
-        <label class="form-label fw-semibold small text-muted mb-1">Rechercher</label>
-        <input type="text" name="q" class="form-control"
-               placeholder="Numéro, marque, immatriculation…"
-               value="<?= htmlspecialchars($keyword) ?>">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label fw-semibold small text-muted mb-1">Catégorie</label>
-        <select name="categorie" class="form-select">
-          <option value="">Toutes catégories</option>
-          <?php foreach ($categories as $cat): ?>
-            <option value="<?= $cat ?>" <?= $categorie === $cat ? 'selected' : '' ?>><?= ucfirst($cat) ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label fw-semibold small text-muted mb-1">Disponibilité</label>
-        <select name="statut" class="form-select">
-          <option value="">Tous statuts</option>
-          <option value="disponible"   <?= $statut === 'disponible'   ? 'selected' : '' ?>>✅ Disponible</option>
-          <option value="loué"         <?= $statut === 'loué'         ? 'selected' : '' ?>>🔑 Loué</option>
-          <option value="maintenance"  <?= $statut === 'maintenance'  ? 'selected' : '' ?>>🔧 Maintenance</option>
-          <option value="indisponible" <?= $statut === 'indisponible' ? 'selected' : '' ?>>⛔ Indisponible</option>
-        </select>
-      </div>
-      <div class="col-md-2 d-flex gap-2">
-        <button class="btn btn-primary flex-fill">Filtrer</button>
-        <a href="/location/public/index.php?url=vehicles" class="btn btn-outline-secondary">✕</a>
+      <div class="row align-items-end">
+        <div class="col-md-3">
+          <div class="filter-label">
+            <i class="fas fa-car"></i> MARQUE
+          </div>
+          <input type="text" name="q" class="filter-input"
+                 placeholder="Ex: Toyota, BMW..."
+                 value="<?= htmlspecialchars($keyword ?? '') ?>">
+        </div>
+        <div class="col-md-3">
+          <div class="filter-label">
+            <i class="fas fa-tags"></i> MODÈLE
+          </div>
+          <input type="text" name="modele" class="filter-input"
+                 placeholder="Ex: Clio, Serie 3..."
+                 value="<?= htmlspecialchars($modele ?? '') ?>">
+        </div>
+        <div class="col-md-3">
+          <div class="filter-label">
+            <i class="fas fa-list-check"></i> STATUT
+          </div>
+          <select name="statut" class="filter-select">
+            <option value="">Tous</option>
+            <option value="disponible" <?= ($statut ?? '') === 'disponible' ? 'selected' : '' ?>>✅ Disponible</option>
+            <option value="loué" <?= ($statut ?? '') === 'loué' ? 'selected' : '' ?>>🔑 Loué</option>
+            <option value="maintenance" <?= ($statut ?? '') === 'maintenance' ? 'selected' : '' ?>>🔧 Maintenance</option>
+            <option value="indisponible" <?= ($statut ?? '') === 'indisponible' ? 'selected' : '' ?>>⛔ Indisponible</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+          <button type="submit" class="btn-search flex-fill">
+            <i class="fas fa-search"></i> Rechercher
+          </button>
+          <a href="/location/public/index.php?url=vehicles" class="btn-reset">
+            <i class="fas fa-rotate-right"></i> Réinitialiser
+          </a>
+        </div>
       </div>
     </form>
   </div>
 
   <!-- Results header -->
   <div class="result-header">
-    <span class="result-count"><?= count($vehicles) ?> véhicule<?= count($vehicles) > 1 ? 's' : '' ?> trouvé<?= count($vehicles) > 1 ? 's' : '' ?></span>
-    <div class="d-flex gap-2 align-items-center">
-      <?php
-        $dispo = count(array_filter($vehicles, fn($v) => $v['statut'] === 'disponible'));
-        $loues = count(array_filter($vehicles, fn($v) => $v['statut'] === 'loué'));
-      ?>
-      <?php if ($dispo): ?>
-        <span class="badge" style="background:#1b5e35;font-size:11px">✅ <?= $dispo ?> disponible<?= $dispo>1?'s':'' ?></span>
-      <?php endif; ?>
-      <?php if ($loues): ?>
-        <span class="badge bg-warning text-dark" style="font-size:11px">🔑 <?= $loues ?> loué<?= $loues>1?'s':'' ?></span>
-      <?php endif; ?>
+    <div class="result-count">
+      <i class="fas fa-car-side"></i>
+      <?= count($vehicles) ?> véhicule<?= count($vehicles) > 1 ? 's' : '' ?> trouvé<?= count($vehicles) > 1 ? 's' : '' ?>
     </div>
   </div>
 
-  <!-- Vehicle cards -->
+  <!-- Vehicle cards grid -->
   <?php if (empty($vehicles)): ?>
     <div class="empty-premium">
       <div class="empty-car">🚗</div>
       <h3>Aucun véhicule trouvé</h3>
       <p class="text-muted">Modifiez vos filtres ou ajoutez un nouveau véhicule.</p>
-      <a href="/location/public/index.php?url=vehicles/add" class="btn btn-success mt-2">+ Ajouter le premier véhicule</a>
+      <a href="/location/public/index.php?url=vehicles/add" class="btn btn-success mt-2">
+        <i class="fas fa-plus"></i> Ajouter le premier véhicule
+      </a>
     </div>
   <?php else: ?>
-
-  <?php foreach ($vehicles as $v):
-    $rClass = ribbonClass($v['statut']);
-    $isDisponible = $v['statut'] === 'disponible';
-    $nbJoursTotal = $v['caution'] > 0 ? round($v['caution'] / max($v['prix_jour'], 1)) : 0;
-  ?>
-  <div class="vcard">
-
-    <!-- Image -->
-    <div class="vcard-img">
-      <span class="statut-ribbon <?= $rClass ?>"><?= ribbonLabel($v['statut']) ?></span>
-      <span class="car-placeholder"><?= carEmoji($v['categorie']) ?></span>
-    </div>
-
-    <!-- Info -->
-    <div class="vcard-info">
-      <div>
-        <!-- Category tag -->
-        <div class="vcard-category">
-          <span>OU SIMILAIRE</span>
-          <span style="color:#1b5e35">◆</span>
-          <?= htmlspecialchars(strtoupper($v['categorie'])) ?>
-        </div>
-
-        <!-- Name -->
-        <div class="vcard-name"><?= htmlspecialchars(strtoupper($v['marque']) . ' ' . strtoupper($v['modele'])) ?></div>
-        <div class="vcard-sub">
-          <?= htmlspecialchars($v['immatriculation'] ?: $v['numero']) ?>
-          <?php if ($v['annee']): ?> · <?= $v['annee'] ?><?php endif; ?>
-          <?php if ($v['couleur']): ?> · <?= htmlspecialchars($v['couleur']) ?><?php endif; ?>
-        </div>
-
-        <!-- Specs -->
-        <div class="vcard-specs">
-          <?php if ($v['nb_places']): ?>
-          <span class="spec-chip"><span class="spec-icon">👤</span><?= $v['nb_places'] ?> places</span>
-          <?php endif; ?>
-          <span class="spec-chip"><span class="spec-icon">📍</span><?= number_format($v['kilometrage']) ?> km</span>
-          <span class="spec-chip"><span class="spec-icon">⚙️</span>Auto</span>
-          <span class="spec-chip"><span class="spec-icon">❄️</span>Climatisation</span>
-        </div>
-
-        <!-- Includes -->
-        <div class="vcard-includes">
-          <div class="incl-item">
-            <div class="incl-check">
-              <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            Kilométrage inclus
+    <div class="vehicles-grid">
+      <?php foreach ($vehicles as $v):
+        $isDisponible = $v['statut'] === 'disponible';
+        $transmission = getTransmission($v);
+        $fuel = getFuelType($v);
+      ?>
+        <div class="vehicle-card">
+          <!-- Image -->
+          <div class="vehicle-img-wrapper">
+            <span class="status-badge <?= statusBadgeClass($v['statut']) ?>">
+              <?= statusLabel($v['statut']) ?>
+            </span>
+            <?php if (!empty($v['image'])): ?>
+              <img src="/location/uploads/vehicles/<?= htmlspecialchars($v['image']) ?>"
+                   alt="<?= htmlspecialchars($v['marque'] . ' ' . $v['modele']) ?>"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+              <span class="vehicle-placeholder" style="display:none"><?= carEmoji($v['categorie'] ?? '') ?></span>
+            <?php else: ?>
+              <span class="vehicle-placeholder"><?= carEmoji($v['categorie'] ?? '') ?></span>
+            <?php endif; ?>
           </div>
-          <div class="incl-item">
-            <div class="incl-check">
-              <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+
+          <!-- Body -->
+          <div class="vehicle-card-body">
+            <!-- Name -->
+            <h3 class="vehicle-name"><?= htmlspecialchars($v['marque'] . ' ' . $v['modele']) ?></h3>
+
+            <!-- Meta -->
+            <div class="vehicle-meta">
+              <span><?= $v['annee'] ?? 'N/A' ?></span>
+              <span>•</span>
+              <span><?= htmlspecialchars($v['immatriculation'] ?: $v['numero']) ?></span>
             </div>
-            Protection de base incluse
+
+            <!-- Features -->
+            <div class="vehicle-features">
+              <?php if ($v['nb_places']): ?>
+                <span class="feature-chip">
+                  <i class="fas fa-users"></i> <?= $v['nb_places'] ?> places
+                </span>
+              <?php endif; ?>
+              <span class="feature-chip">
+                <i class="fas fa-cogs"></i> <?= $transmission ?>
+              </span>
+              <span class="feature-chip">
+                <i class="fas fa-gas-pump"></i> <?= $fuel ?>
+              </span>
+            </div>
+
+            <!-- Price -->
+            <div class="vehicle-price">
+              <span class="price-value"><?= number_format($v['prix_jour'], 0, ',', ' ') ?></span>
+              <span class="price-currency">MAD</span>
+              <span class="price-period">/ jour</span>
+            </div>
+
+            <!-- Actions -->
+            <div class="vehicle-actions">
+              <a href="/location/public/index.php?url=vehicles/edit&id=<?= $v['id'] ?>" class="btn-view">
+                <i class="fas fa-eye"></i> Voir
+              </a>
+              <?php if ($isDisponible): ?>
+                <a href="/location/public/index.php?url=reservations/add&vehicle_id=<?= $v['id'] ?>" class="btn-rent">
+                  <i class="fas fa-key"></i> Louer
+                </a>
+              <?php else: ?>
+                <span class="btn-rent disabled">
+                  <i class="fas fa-ban"></i> Indisponible
+                </span>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="vcard-actions">
-        <a href="/location/public/index.php?url=vehicles/edit&id=<?= $v['id'] ?>"
-           class="btn btn-outline-secondary btn-edit-sm">✏️ Modifier</a>
-        <a href="/location/public/index.php?url=vehicles/delete&id=<?= $v['id'] ?>"
-           class="btn btn-outline-danger btn-edit-sm"
-           onclick="return confirm('Supprimer ce véhicule ?')">🗑 Supprimer</a>
-        <a href="/location/public/index.php?url=reservations/add&vehicle_id=<?= $v['id'] ?>"
-           class="btn-details ms-auto">Plus de détails ▼</a>
-      </div>
+      <?php endforeach; ?>
     </div>
-
-    <!-- Price -->
-    <div class="vcard-price">
-      <div class="price-label">Payer en agence</div>
-      <div>
-        <div class="price-amount">
-          <?= number_format($v['prix_jour'], 2, ',', ' ') ?> <span>MAD</span>
-        </div>
-        <div class="price-total">/ jour</div>
-      </div>
-      <?php if ($v['caution'] > 0): ?>
-      <div class="price-caution">Caution : <?= number_format($v['caution'], 2, ',', ' ') ?> MAD</div>
-      <?php endif; ?>
-      <?php if ($isDisponible): ?>
-        <a href="/location/public/index.php?url=reservations/add&vehicle_id=<?= $v['id'] ?>"
-           class="btn-select">Sélectionner</a>
-      <?php else: ?>
-        <button class="btn-select" style="background:linear-gradient(135deg,#9ca3af,#6b7280);box-shadow:none;cursor:not-allowed" disabled>
-          Indisponible
-        </button>
-      <?php endif; ?>
-    </div>
-
-  </div>
-  <?php endforeach; ?>
   <?php endif; ?>
 
 </div>

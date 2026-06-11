@@ -6,6 +6,47 @@
   <title>Ajouter véhicule — AutoLocation</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="/location/style.css" rel="stylesheet">
+  <style>
+    .image-upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: #f9fafb;
+    }
+    .image-upload-area:hover {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+    .image-upload-area.dragover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    .image-upload-area .upload-icon {
+      font-size: 48px;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+    .image-upload-area .upload-text {
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .image-upload-area .upload-text strong {
+      color: #3b82f6;
+    }
+    .image-preview {
+      max-width: 200px;
+      max-height: 150px;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: none;
+    }
+    #imageInput {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 <?php include __DIR__ . "/../../includes/navbar.php"; ?>
@@ -21,7 +62,21 @@
 
   <div class="card">
     <div class="card-body">
-      <form method="POST" class="row g-3">
+      <form method="POST" enctype="multipart/form-data" class="row g-3">
+
+        <!-- Image Upload -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">Photo du véhicule</label>
+          <div class="image-upload-area" onclick="document.getElementById('imageInput').click()">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">
+              <strong>Cliquez pour ajouter une photo</strong><br>
+              ou glissez-déposez ici (JPG, PNG, max 5MB)
+            </div>
+            <img id="imagePreview" class="image-preview" alt="Aperçu">
+          </div>
+          <input type="file" name="image" id="imageInput" accept="image/*">
+        </div>
 
         <div class="col-md-4">
           <label class="form-label fw-semibold">Numéro interne <span class="text-danger">*</span></label>
@@ -124,5 +179,51 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Image preview functionality
+const imageInput = document.getElementById('imageInput');
+const imagePreview = document.getElementById('imagePreview');
+const uploadArea = document.querySelector('.image-upload-area');
+
+// Handle file selection
+imageInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    showPreview(file);
+  }
+});
+
+// Handle drag and drop
+uploadArea.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    imageInput.files = e.dataTransfer.files;
+    showPreview(file);
+  }
+});
+
+function showPreview(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    imagePreview.src = e.target.result;
+    imagePreview.style.display = 'block';
+    document.querySelector('.upload-icon').style.display = 'none';
+    document.querySelector('.upload-text').innerHTML = '<strong>Photo sélectionnée</strong><br>Cliquez pour changer';
+  };
+  reader.readAsDataURL(file);
+}
+</script>
 </body>
 </html>

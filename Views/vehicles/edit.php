@@ -6,6 +6,76 @@
   <title>Modifier véhicule — AutoLocation</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="/location/style.css" rel="stylesheet">
+  <style>
+    .image-upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: #f9fafb;
+      position: relative;
+    }
+    .image-upload-area:hover {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+    .image-upload-area.dragover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    .image-upload-area .upload-icon {
+      font-size: 48px;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+    .image-upload-area .upload-text {
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .image-upload-area .upload-text strong {
+      color: #3b82f6;
+    }
+    .image-preview {
+      max-width: 200px;
+      max-height: 150px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    #imageInput {
+      display: none;
+    }
+    .current-image-container {
+      position: relative;
+      display: inline-block;
+    }
+    .current-image-container img {
+      max-width: 200px;
+      max-height: 150px;
+      border-radius: 8px;
+      border: 2px solid #e5e7eb;
+    }
+    .delete-image-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .delete-image-btn:hover {
+      background: #dc2626;
+    }
+  </style>
 </head>
 <body>
 <?php include __DIR__ . "/../../includes/navbar.php"; ?>
@@ -27,7 +97,30 @@
 
   <div class="card">
     <div class="card-body">
-      <form method="POST" class="row g-3">
+      <form method="POST" enctype="multipart/form-data" class="row g-3">
+
+        <!-- Image Upload -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">Photo du véhicule</label>
+          <?php if (!empty($v['image'])): ?>
+            <!-- Current image display -->
+            <div class="current-image-container mb-2" id="currentImageContainer">
+              <img src="/location/uploads/vehicles/<?= htmlspecialchars($v['image']) ?>" alt="Image actuelle">
+              <button type="button" class="delete-image-btn" onclick="deleteCurrentImage()" title="Supprimer l'image">×</button>
+            </div>
+            <input type="hidden" name="delete_image" id="deleteImageInput" value="0">
+          <?php endif; ?>
+          
+          <div class="image-upload-area" onclick="document.getElementById('imageInput').click()" id="uploadArea">
+            <div class="upload-icon" id="uploadIcon">📸</div>
+            <div class="upload-text" id="uploadText">
+              <strong>Cliquez pour changer la photo</strong><br>
+              ou glissez-déposez ici (JPG, PNG, max 5MB)
+            </div>
+            <img id="imagePreview" class="image-preview" alt="Aperçu">
+          </div>
+          <input type="file" name="image" id="imageInput" accept="image/*">
+        </div>
 
         <div class="col-md-4">
           <label class="form-label fw-semibold">Numéro interne <span class="text-danger">*</span></label>
@@ -130,5 +223,61 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Image preview functionality
+const imageInput = document.getElementById('imageInput');
+const imagePreview = document.getElementById('imagePreview');
+const uploadArea = document.getElementById('uploadArea');
+
+// Handle file selection
+imageInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    showPreview(file);
+  }
+});
+
+// Handle drag and drop
+uploadArea.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    imageInput.files = e.dataTransfer.files;
+    showPreview(file);
+  }
+});
+
+function showPreview(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    imagePreview.src = e.target.result;
+    imagePreview.style.display = 'block';
+    document.getElementById('uploadIcon').style.display = 'none';
+    document.getElementById('uploadText').innerHTML = '<strong>Photo sélectionnée</strong><br>Cliquez pour changer';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Delete current image
+function deleteCurrentImage() {
+  if (confirm('Supprimer cette image ?')) {
+    document.getElementById('deleteImageInput').value = '1';
+    document.getElementById('currentImageContainer').style.display = 'none';
+    document.getElementById('uploadIcon').style.display = 'block';
+    document.getElementById('uploadText').innerHTML = '<strong>Cliquez pour ajouter une photo</strong><br>ou glissez-déposez ici (JPG, PNG, max 5MB)';
+  }
+}
+</script>
 </body>
 </html>

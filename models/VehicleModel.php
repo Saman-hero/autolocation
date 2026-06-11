@@ -62,11 +62,11 @@ class VehicleModel {
      */
     public function create($data) {
         $sql = "INSERT INTO vehicles
-            (numero, immatriculation, marque, modele, annee, couleur, nb_places,
+            (numero, immatriculation, marque, modele, annee, couleur, image, nb_places,
              categorie, kilometrage, statut, prix_jour, caution,
              type_vidange, intervalle_vidange, derniere_vidange_km, date_derniere_vidange)
         VALUES
-            (:numero, :immatriculation, :marque, :modele, :annee, :couleur, :nb_places,
+            (:numero, :immatriculation, :marque, :modele, :annee, :couleur, :image, :nb_places,
              :categorie, :kilometrage, :statut, :prix_jour, :caution,
              :type_vidange, :intervalle_vidange, :derniere_vidange_km, :date_derniere_vidange)";
         return $this->conn->prepare($sql)->execute($data);
@@ -86,6 +86,7 @@ class VehicleModel {
             modele               = :modele,
             annee                = :annee,
             couleur              = :couleur,
+            image                = :image,
             nb_places            = :nb_places,
             categorie            = :categorie,
             kilometrage          = :kilometrage,
@@ -156,17 +157,18 @@ class VehicleModel {
      * @param string|null $statut    Exact status match (e.g. 'disponible').
      * @return array  Matching vehicle rows ordered newest first.
      */
-    public function search($keyword = null, $categorie = null, $statut = null) {
+    public function search($keyword = null, $categorie = null, $statut = null, $modele = null) {
         $sql    = "SELECT * FROM vehicles WHERE 1=1";
         $params = [];
 
         if (!empty($keyword)) {
             // The same keyword is compared against four different columns,
             // so the placeholder value must be added four times to the params array.
-            $sql     .= " AND (numero LIKE ? OR marque LIKE ? OR modele LIKE ? OR immatriculation LIKE ?)";
+            $sql     .= " AND (numero LIKE ? OR marque LIKE ? OR immatriculation LIKE ?)";
             $params[] = "%$keyword%"; $params[] = "%$keyword%";
-            $params[] = "%$keyword%"; $params[] = "%$keyword%";
+            $params[] = "%$keyword%";
         }
+        if (!empty($modele))    { $sql .= " AND modele LIKE ?"; $params[] = "%$modele%"; }
         if (!empty($categorie)) { $sql .= " AND categorie = ?"; $params[] = $categorie; }
         if (!empty($statut))    { $sql .= " AND statut = ?";    $params[] = $statut; }
 
